@@ -11,27 +11,52 @@
 </head>
 <body>
 <main class="app-shell">
-<header class="topbar"><div class="brand"><div class="brand-mark">🕷️</div><div><div class="eyebrow">COMMUNITY TRACKING NETWORK</div><h1>CHEEGUN TRACKER</h1></div></div><div class="live-badge"><span class="live-dot"></span>SIGNAL ACTIVE</div></header>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">🕷️</div><div><div class="eyebrow">COMMUNITY TRACKING NETWORK</div><h1>CHEEGUN TRACKER</h1></div></div>
+  <div class="live-badge"><span class="live-dot"></span>SIGNAL ACTIVE</div>
+</header>
 <section class="content">
-<div class="primary-grid">
-<section class="panel visual-panel"><div class="panel-head"><strong>THUNDER BAY // LIVE MAP</strong><span>OPENSTREETMAP // SIMULATION</span></div><div id="trackingMap" class="tracking-map" aria-label="Interactive Thunder Bay map"><div class="map-hud"><div>MAP SYSTEM: <b>ONLINE</b></div><div>GPS SOURCE: <b>SIMULATED</b></div><div>TRACK MODE: <b>ROAMING</b></div></div><div class="map-scanline"></div></div></section>
-<section class="panel telemetry-panel"><div class="panel-head"><strong>TARGET TELEMETRY</strong><span class="locked">● LOCKED</span></div><div class="stats">
-<article class="stat-card"><span>Signal strength</span><strong id="signalValue">94%</strong><div class="meter"><i id="signalBar"></i></div></article>
-<article class="stat-card"><span>Movement</span><strong id="movementValue">ROAMING</strong></article>
-<article class="stat-card"><span>Last ping</span><strong id="pingValue">--:--:--</strong></article>
-<article class="stat-card"><span>Tracker nodes</span><strong>17 ONLINE</strong></article>
-<article class="stat-card"><span>Speed</span><strong id="speedValue">4.8 KM/H</strong></article>
-<article class="stat-card"><span>Heading</span><strong id="headingValue">247° SW</strong></article>
-</div><div class="target-status"><span class="status-dot"></span><div><b id="zoneLabel">SIMULATED SIGNAL</b><small>Target position is fictional and generated locally.</small></div></div></section>
-</div>
-<div class="secondary-grid">
-<section class="panel activity-panel"><div class="panel-head"><strong>ACTIVITY FEED</strong><span>LIVE</span></div><div class="activity-feed" id="activityFeed" aria-live="polite"></div></section>
-<section class="panel radar-panel"><div class="panel-head"><strong>RADAR ARRAY</strong><span>NODE 07</span></div><div class="radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><div class="radar-line"></div><div class="radar-target"></div><span class="radar-label">CHEEGUN</span></div></section>
-</div>
+  <div class="primary-grid">
+    <section class="panel visual-panel">
+      <div class="panel-head"><strong>THUNDER BAY // LIVE MAP</strong><span>REAL MAP // SIMULATION</span></div>
+      <div id="trackingMap" class="tracking-map" aria-label="Interactive Thunder Bay map">
+        <div class="map-hud">
+          <div>MAP SYSTEM: <b>ONLINE</b></div>
+          <div>MAP VIEW: <b id="mapViewHud">STREET</b></div>
+          <div>GPS SOURCE: <b>SIMULATED</b></div>
+          <div>TRACK MODE: <b>ROAMING</b></div>
+        </div>
+        <div class="map-scanline"></div>
+        <div class="map-mode-bar" aria-label="Map view controls">
+          <button class="map-mode active" data-map="street" type="button">STREET</button>
+          <button class="map-mode" data-map="satellite" type="button">SATELLITE</button>
+          <button class="map-mode" data-map="dark" type="button">DARK</button>
+        </div>
+      </div>
+    </section>
+    <section class="panel telemetry-panel">
+      <div class="panel-head"><strong>TARGET TELEMETRY</strong><span class="locked">● LOCKED</span></div>
+      <div class="stats">
+        <article class="stat-card"><span>Signal strength</span><strong id="signalValue">94%</strong><div class="meter"><i id="signalBar"></i></div></article>
+        <article class="stat-card"><span>Movement</span><strong id="movementValue">ROAMING</strong></article>
+        <article class="stat-card"><span>Last ping</span><strong id="pingValue">--:--:--</strong></article>
+        <article class="stat-card"><span>Tracker nodes</span><strong>17 ONLINE</strong></article>
+        <article class="stat-card"><span>Speed</span><strong id="speedValue">4.8 KM/H</strong></article>
+        <article class="stat-card"><span>Heading</span><strong id="headingValue">247° SW</strong></article>
+      </div>
+      <div class="target-status"><span class="status-dot"></span><div><b id="zoneLabel">SIMULATED SIGNAL</b><small>Target position is fictional and generated locally.</small></div></div>
+      <div class="quick-readout"><span>MAP PROVIDER</span><strong id="providerValue">OPENSTREETMAP</strong></div>
+    </section>
+  </div>
+  <div class="secondary-grid">
+    <section class="panel activity-panel"><div class="panel-head"><strong>ACTIVITY FEED</strong><span>LIVE</span></div><div class="activity-feed" id="activityFeed" aria-live="polite"></div></section>
+    <section class="panel radar-panel"><div class="panel-head"><strong>RADAR ARRAY</strong><span>NODE 07</span></div><div class="radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><div class="radar-line"></div><div class="radar-target"></div><span class="radar-label">CHEEGUN</span></div></section>
+  </div>
 </section>
 <div class="actions"><button class="btn primary" id="scanButton" type="button">⟳ RUN DEEP SCAN</button><button class="btn" id="pingButton" type="button">◉ PING SUBJECT</button><button class="btn danger" id="alertButton" type="button">⚠ MAXIMUM CHEEGUN ALERT</button></div>
-<footer class="disclaimer">FICTIONAL PRANK DEMO • No GPS, device location, camera, microphone, IP tracking, or real surveillance is used. The interactive map is real public map data; the target, route, telemetry and alerts are simulated locally. Map data © OpenStreetMap contributors.</footer>
+<footer class="disclaimer">FICTIONAL PRANK DEMO • No GPS, device location, camera, microphone, IP tracking, or real surveillance is used. The interactive map uses public map imagery; the target, route, telemetry and alerts are simulated locally. © OpenStreetMap contributors. Satellite imagery © Esri.</footer>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="js/tracker.js" defer></script>
-</body></html>
+</body>
+</html>

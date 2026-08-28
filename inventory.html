@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#09080c"><title>OUTBREAK // INVENTORY</title><link rel="stylesheet" href="css/inventory.css"></head>
+<body><main class="inventory-app">
+<header><a href="outbreak.html">← BACK TO OUTBREAK</a><div><span>ALPHA-01 // SURVIVOR EQUIPMENT</span><h1>INVENTORY</h1></div><strong id="weight">8.4 / 28 KG</strong></header>
+<section class="inventory-layout">
+<aside class="character-panel"><div class="panel-title">SURVIVOR</div><div class="character"><div class="slot head" data-slot="head">HEAD</div><div class="slot face" data-slot="face">FACE</div><div class="slot torso" data-slot="torso">JACKET<br><small>EMPTY</small></div><div class="body">▲</div><div class="slot hands" data-slot="hands">HANDS<br><small>EMPTY</small></div><div class="slot belt" data-slot="belt">BELT<br><small>EMPTY</small></div><div class="slot pants" data-slot="pants">PANTS<br><small>CARGO PANTS</small></div><div class="slot feet" data-slot="feet">BOOTS<br><small>EMPTY</small></div></div></aside>
+<section class="main-inventory">
+<div class="container-card"><div class="container-head"><b>HANDS</b><span>QUICK ACCESS</span></div><div class="quick-slot" id="handsSlot">EMPTY</div></div>
+<div class="container-card"><div class="container-head"><b>BACKPACK</b><span id="backpackSlots">0 / 30 SLOTS</span></div><div class="grid backpack" id="backpackGrid"></div></div>
+<div class="container-card"><div class="container-head"><b>CARGO PANTS</b><span>0 / 12 SLOTS</span></div><div class="grid small-grid" id="pantsGrid"></div></div>
+</section>
+<aside class="ground-panel"><div class="panel-title">VICINITY</div><div class="vicinity-label">INTERCITY DISTRICT</div><div class="grid ground-grid" id="groundGrid"></div><div class="item-info" id="itemInfo"><b>SELECT AN ITEM</b><p>Tap an item to inspect it.</p></div><div class="actions"><button id="useBtn">USE</button><button id="equipBtn">EQUIP</button><button id="dropBtn">DROP</button></div></aside>
+</section>
+<div class="mobile-tabs"><button data-target="character-panel">SURVIVOR</button><button data-target="main-inventory">PACK</button><button data-target="ground-panel">VICINITY</button></div>
+</main><script src="js/inventory.js"></script></body></html>

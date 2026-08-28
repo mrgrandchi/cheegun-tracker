@@ -2,3 +2,13 @@
 /* Navigation engine */.survivor-selected{filter:drop-shadow(0 0 12px #59ff87)}.route-preview{stroke-dasharray:7 8}.poi-label{background:#111c;border:1px solid #48504e;color:#dce1df;font:800 8px monospace;padding:4px;border-radius:4px}.map-panel:before{content:'EXPLORE TO REVEAL';position:absolute;z-index:600;pointer-events:none;right:12px;top:56px;padding:6px 8px;background:#090a0ccc;border:1px solid #303735;border-radius:5px;color:#8e9793;font:800 7px monospace}
 /* Procedural loot engine */.loot-meta{margin:10px 0;padding:9px;border:1px solid #50462d;background:#0d0d0c;color:#ffd277;font:800 8px monospace}.loot-modal-card{border-color:#705c37}.loot-results{display:grid;gap:7px;margin:14px 0}.loot-found{display:flex;justify-content:space-between;align-items:center;padding:11px;border:1px solid #4a4337;background:#15130f;border-radius:7px;font-size:13px}.loot-found small{color:#8eeaa5;font:800 7px monospace}
 /* Zombie AI */.zombie{transition:transform .35s linear}.noise-indicator{color:#ffb347}.zombie-alert{animation:zombiePulse .7s infinite}@keyframes zombiePulse{50%{filter:brightness(1.8) drop-shadow(0 0 8px #ff4f61)}}
+/* Tactical World Layer */
+.building-zone{transition:fill-opacity .25s,stroke .25s}
+.terrain-forest{filter:drop-shadow(0 0 7px rgba(50,160,85,.18))}
+.terrain-water{filter:drop-shadow(0 0 10px rgba(62,143,180,.28))}
+.fog-layer{transition:fill-opacity .35s}
+.vision-radius{stroke-dasharray:4 8;animation:visionScan 2.8s linear infinite}
+.route-preview{filter:drop-shadow(0 0 5px #59ff87)}
+@keyframes visionScan{to{stroke-dashoffset:-36}}
+.map-panel:after{content:"SATELLITE // TACTICAL TERRAIN";position:absolute;z-index:800;right:12px;bottom:12px;padding:6px 8px;background:#080a0ddd;border:1px solid #33413c;border-radius:5px;color:#8faca0;font:800 7px monospace;letter-spacing:.08em;pointer-events:none}
+@media(max-width:600px){.map-panel:after{display:none}}

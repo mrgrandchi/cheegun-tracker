@@ -16,35 +16,37 @@
   const dark = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 20, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>' });
   street.addTo(map);
 
-  // Public Thunder Bay landmarks/areas used only as visual map context.
-  // CTN does not claim that Cheegun is at any of these places.
+  // Verified public Thunder Bay POIs. Coordinates are fixed map references, not person-location data.
   const publicPois = [
-    { name: "Prince Arthur's Landing", type: "PUBLIC WATERFRONT", lat: 48.4350, lon: -89.2190, icon: "◆" },
-    { name: "Hillcrest Park", type: "PUBLIC VIEWPOINT", lat: 48.4276, lon: -89.2390, icon: "◇" },
-    { name: "Kaministiquia River Heritage Park", type: "PUBLIC RIVERSIDE", lat: 48.3839, lon: -89.2494, icon: "≈" },
-    { name: "Intercity Shopping Centre", type: "PUBLIC RETAIL AREA", lat: 48.4130, lon: -89.2620, icon: "□" },
-    { name: "Arthur Street Marketplace", type: "PUBLIC RETAIL AREA", lat: 48.3850, lon: -89.2750, icon: "□" },
-    { name: "Waverley Park", type: "PUBLIC PARK / LOOKOUT", lat: 48.4302, lon: -89.2470, icon: "△" }
+    { name: "Waverley Resource Library", type: "PUBLIC LIBRARY", address: "285 Red River Rd", lat: 48.43617, lon: -89.22369, icon: "▣" },
+    { name: "Waverley Park", type: "PUBLIC PARK", address: "Waverley St / Red River Rd", lat: 48.43750, lon: -89.22667, icon: "△" },
+    { name: "Connaught Square", type: "PUBLIC PARK", address: "Red River Rd / Algoma St", lat: 48.43667, lon: -89.22392, icon: "◇" },
+    { name: "Intercity Shopping Centre", type: "PUBLIC SHOPPING CENTRE", address: "1000 Fort William Rd", lat: 48.40381, lon: -89.24361, icon: "□" },
+    { name: "Arthur Street Marketplace", type: "PUBLIC SHOPPING CENTRE", address: "1101 Arthur St W", lat: 48.38230, lon: -89.30818, icon: "□" },
+    { name: "Marina Park", type: "PUBLIC WATERFRONT PARK", address: "Marina Park Dr", lat: 48.43415, lon: -89.21583, icon: "◆" },
+    { name: "Prince Arthur's Landing", type: "PUBLIC WATERFRONT", address: "Marina Park Dr", lat: 48.43309, lon: -89.21718, icon: "◆" },
+    { name: "Kaministiquia River Heritage Park", type: "PUBLIC RIVERSIDE PARK", address: "May St S", lat: 48.38181, lon: -89.24300, icon: "≈" },
+    { name: "Thunder Bay Public Library — Brodie", type: "PUBLIC LIBRARY", address: "216 Brodie St S", lat: 48.43100, lon: -89.24600, icon: "▣" },
+    { name: "County Park Library", type: "PUBLIC LIBRARY", address: "1020 Dawson Rd", lat: 48.40900, lon: -89.24869, icon: "▣" },
+    { name: "Hillcrest Park", type: "PUBLIC VIEWPOINT", address: "High St", lat: 48.42900, lon: -89.23200, icon: "◎" },
+    { name: "Chancellor Paterson Library", type: "UNIVERSITY LIBRARY", address: "955 Oliver Rd", lat: 48.42150, lon: -89.26050, icon: "▣" }
   ];
 
   const poiIcon = L.divIcon({ className: "", html: '<div class="poi-marker"><span></span></div>', iconSize: [18,18], iconAnchor: [9,9] });
   const poiLayer = L.layerGroup().addTo(map);
   publicPois.forEach(p => {
     const marker = L.marker([p.lat, p.lon], { icon: poiIcon, keyboard: true }).addTo(poiLayer);
-    marker.bindPopup(`<div class="poi-popup"><strong>${p.icon} ${p.name}</strong><br><span>${p.type}</span><small>PUBLIC MAP REFERENCE • NOT A TARGET LOCATION</small></div>`);
+    marker.bindPopup(`<div class="poi-popup"><strong>${p.icon} ${p.name}</strong><br><span>${p.type}</span><small>${p.address}<br>PUBLIC MAP REFERENCE • NOT A TARGET LOCATION</small></div>`);
   });
 
-  // CTN-only fictional zones. These are labels/visual zones, not observations of a person.
+  // Fictional CTN labels only — these do not represent observations of a person.
   const ctnZones = [
-    { name: "WATERFRONT SIMULATION ZONE", lat: 48.4340, lon: -89.2240 },
-    { name: "RIVERSIDE SIMULATION ZONE", lat: 48.3850, lon: -89.2475 },
-    { name: "INTERCITY SIMULATION ZONE", lat: 48.4100, lon: -89.2600 }
+    { name: "WATERFRONT SIMULATION ZONE", lat: 48.4340, lon: -89.2162 },
+    { name: "RIVERSIDE SIMULATION ZONE", lat: 48.3817, lon: -89.2430 },
+    { name: "INTERCITY SIMULATION ZONE", lat: 48.4038, lon: -89.2436 }
   ];
   const ctnIcon = L.divIcon({ className: "", html: '<div class="ctn-zone-marker">CTN</div>', iconSize: [30,20], iconAnchor: [15,10] });
-  ctnZones.forEach(z => {
-    const m = L.marker([z.lat, z.lon], { icon: ctnIcon, interactive: true }).addTo(map);
-    m.bindPopup(`<div class="poi-popup"><strong>◉ ${z.name}</strong><br><span>FICTIONAL CTN DESIGNATION</span><small>SIMULATION ONLY</small></div>`);
-  });
+  ctnZones.forEach(z => L.marker([z.lat, z.lon], { icon: ctnIcon }).addTo(map).bindPopup(`<div class="poi-popup"><strong>◉ ${z.name}</strong><br><span>FICTIONAL CTN DESIGNATION</span><small>SIMULATION ONLY</small></div>`));
 
   const targetIcon = L.divIcon({ className: "", html: '<div class="target-marker"><span class="target-core"></span></div>', iconSize: [34,34], iconAnchor: [17,17] });
   let target = null, trail = null, route = [], routeIndex = 0, signal = 94;
@@ -88,15 +90,15 @@
     headingValue.textContent=heading(a,b); zoneLabel.textContent=m.label; pingTime();
     if (confidenceValue) confidenceValue.textContent=`${Math.max(88,Math.min(99,signal+Math.floor(Math.random()*4)))}%`;
     const poi=nearestPublicPoi(b);
-    if (poi && nearestPoi) { nearestPoi.textContent=poi.name; nearestPoiType.textContent=`${poi.type} • ${poi.distance.toFixed(2)} km away • public reference`; }
+    if (poi && nearestPoi) { nearestPoi.textContent=poi.name; nearestPoiType.textContent=`${poi.type} • ${poi.distance.toFixed(2)} km away`; }
   }
 
   async function buildRoadRoute() {
     addEvent("Road-network route request initialized", false);
     try {
       const coords = [[48.38145,-89.24705],[48.38015,-89.24105],[48.38295,-89.23825],[48.38405,-89.24220],[48.38200,-89.24510],[48.37990,-89.24620]].map(([lat,lon])=>`${lon},${lat}`).join(";");
-      const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=false`;
-      const response = await fetch(url); if (!response.ok) throw new Error("routing service unavailable");
+      const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=false`);
+      if (!response.ok) throw new Error("routing service unavailable");
       const data = await response.json(); if (!data.routes?.[0]?.geometry?.coordinates?.length) throw new Error("no route");
       route=data.routes[0].geometry.coordinates.map(([lon,lat])=>[lat,lon]); addEvent(`Road geometry acquired • ${route.length} mapped points`);
     } catch (err) {

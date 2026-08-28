@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b0f">
+  <meta name="description" content="Cheegun Tracker — fictional prank demo with simulated telemetry only.">
+  <title>CHEEGUN TRACKER // LIVE</title>
+  <link rel="stylesheet" href="css/tracker.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">🕷️</div>
+        <div>
+          <div class="eyebrow">COMMUNITY TRACKING NETWORK</div>
+          <h1>CHEEGUN TRACKER</h1>
+        </div>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span>SIGNAL ACTIVE</div>
+    </header>
+
+    <section class="content">
+      <div class="primary-grid">
+        <section class="panel visual-panel">
+          <div class="panel-head">
+            <strong>STREET-LEVEL VISUAL FEED</strong>
+            <span>CAM 07 // SIMULATION</span>
+          </div>
+          <div class="street-view" aria-label="Fictional surveillance-style street view">
+            <div class="hud">
+              <div>SYSTEM: <b>ONLINE</b></div>
+              <div>SIGNAL: <b id="signalHud">94%</b></div>
+              <div>MODE: <b id="modeHud">ROAMING</b></div>
+              <div>GPS: <b>SIMULATED</b></div>
+            </div>
+            <div class="crosshair" aria-hidden="true"></div>
+            <div class="target-reticle" aria-hidden="true"></div>
+            <div class="subject-tag">SUBJECT SIGNAL</div>
+          </div>
+        </section>
+
+        <section class="panel map-panel">
+          <div class="panel-head">
+            <strong>THUNDER BAY // TRACK MAP</strong>
+            <span>SIMULATED</span>
+          </div>
+          <div class="fake-map" aria-label="Fictional Thunder Bay tracking map">
+            <span class="street-name red-river">RED RIVER RD</span>
+            <span class="street-name algoma">ALGOMA ST</span>
+            <span class="street-name cumberland">CUMBERLAND ST</span>
+            <span class="street-name court">COURT ST</span>
+            <span class="street-name water">WATER ST</span>
+            <div class="map-target">
+              <span></span>
+              <label id="zoneLabel">SIGNAL ZONE</label>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="secondary-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <strong>TARGET TELEMETRY</strong>
+            <span class="locked">● LOCKED</span>
+          </div>
+          <div class="stats">
+            <article class="stat-card">
+              <span>Signal strength</span>
+              <strong id="signalValue">94%</strong>
+              <div class="meter"><i id="signalBar"></i></div>
+            </article>
+            <article class="stat-card">
+              <span>Movement</span>
+              <strong id="movementValue">ROAMING</strong>
+            </article>
+            <article class="stat-card">
+              <span>Last ping</span>
+              <strong id="pingValue">--:--:--</strong>
+            </article>
+            <article class="stat-card">
+              <span>Tracker nodes</span>
+              <strong>17 ONLINE</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel activity-panel">
+          <div class="panel-head">
+            <strong>ACTIVITY FEED</strong>
+            <span>LIVE</span>
+          </div>
+          <div class="activity-feed" id="activityFeed" aria-live="polite"></div>
+        </section>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn primary" id="scanButton" type="button">⟳ RUN DEEP SCAN</button>
+      <button class="btn" id="pingButton" type="button">◉ PING SUBJECT</button>
+      <button class="btn danger" id="alertButton" type="button">⚠ MAXIMUM CHEEGUN ALERT</button>
+    </div>
+
+    <footer class="disclaimer">
+      FICTIONAL PRANK DEMO • No GPS, device location, camera, microphone, IP tracking, or real surveillance is used. Telemetry is generated locally for entertainment.
+    </footer>
+  </main>
+  <script src="js/tracker.js" defer></script>
+</body>
+</html>

@@ -12,26 +12,18 @@
 <body>
 <main class="app-shell">
 <header class="topbar">
-  <div class="brand"><div class="brand-mark">🕷️</div><div><div class="eyebrow">COMMUNITY TRACKING NETWORK</div><h1>CHEEGUN TRACKER</h1></div></div>
-  <div class="live-badge"><span class="live-dot"></span>SIGNAL ACTIVE</div>
+  <div class="brand"><div class="brand-mark">🕷️</div><div><div class="eyebrow">COMMUNITY TRACKING NETWORK // CTN-01</div><h1>CHEEGUN TRACKER</h1></div></div>
+  <div class="header-meta"><span class="system-clock" id="systemClock">00:00:00</span><span>SIMULATION</span><div class="live-badge"><span class="live-dot"></span>SIGNAL ACTIVE</div></div>
 </header>
 <section class="content">
   <div class="primary-grid">
     <section class="panel visual-panel">
       <div class="panel-head"><strong>THUNDER BAY // LIVE MAP</strong><span>REAL MAP // SIMULATION</span></div>
       <div id="trackingMap" class="tracking-map" aria-label="Interactive Thunder Bay map">
-        <div class="map-hud">
-          <div>MAP SYSTEM: <b>ONLINE</b></div>
-          <div>MAP VIEW: <b id="mapViewHud">STREET</b></div>
-          <div>GPS SOURCE: <b>SIMULATED</b></div>
-          <div>TRACK MODE: <b>ROAMING</b></div>
-        </div>
+        <div class="map-hud"><div class="hud-title">CTN FIELD MAP</div><div>MAP SYSTEM: <b>ONLINE</b></div><div>MAP VIEW: <b id="mapViewHud">STREET</b></div><div>GPS SOURCE: <b>SIMULATED</b></div><div>TRACK MODE: <b>ROAMING</b></div></div>
         <div class="map-scanline"></div>
-        <div class="map-mode-bar" aria-label="Map view controls">
-          <button class="map-mode active" data-map="street" type="button">STREET</button>
-          <button class="map-mode" data-map="satellite" type="button">SATELLITE</button>
-          <button class="map-mode" data-map="dark" type="button">DARK</button>
-        </div>
+        <div class="map-mode-bar" aria-label="Map view controls"><button class="map-mode active" data-map="street" type="button">STREET</button><button class="map-mode" data-map="satellite" type="button">SATELLITE</button><button class="map-mode" data-map="dark" type="button">DARK</button></div>
+        <div class="poi-legend" id="poiLegend"><span><i class="poi-dot landmark"></i>PUBLIC POI</span><span><i class="poi-dot ctn"></i>CTN SIMULATION</span></div>
       </div>
     </section>
     <section class="panel telemetry-panel">
@@ -46,15 +38,16 @@
       </div>
       <div class="target-status"><span class="status-dot"></span><div><b id="zoneLabel">SIMULATED SIGNAL</b><small>Target position is fictional and generated locally.</small></div></div>
       <div class="quick-readout"><span>MAP PROVIDER</span><strong id="providerValue">OPENSTREETMAP</strong></div>
+      <div class="poi-readout"><span>NEAREST CTN POI</span><strong id="nearestPoi">--</strong><small id="nearestPoiType">Waiting for simulated movement</small></div>
     </section>
   </div>
   <div class="secondary-grid">
     <section class="panel activity-panel"><div class="panel-head"><strong>ACTIVITY FEED</strong><span>LIVE</span></div><div class="activity-feed" id="activityFeed" aria-live="polite"></div></section>
-    <section class="panel radar-panel"><div class="panel-head"><strong>RADAR ARRAY</strong><span>NODE 07</span></div><div class="radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><div class="radar-line"></div><div class="radar-target"></div><span class="radar-label">CHEEGUN</span></div></section>
+    <section class="panel radar-panel"><div class="panel-head"><strong>RADAR ARRAY</strong><span>NODE 07</span></div><div class="radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><div class="radar-line"></div><div class="radar-target"></div><span class="radar-label">CHEEGUN</span></div><div class="radar-footer"><span>RANGE <b>2.4 KM</b></span><span>CONFIDENCE <b id="confidenceValue">96%</b></span></div></section>
   </div>
 </section>
 <div class="actions"><button class="btn primary" id="scanButton" type="button">⟳ RUN DEEP SCAN</button><button class="btn" id="pingButton" type="button">◉ PING SUBJECT</button><button class="btn danger" id="alertButton" type="button">⚠ MAXIMUM CHEEGUN ALERT</button></div>
-<footer class="disclaimer">FICTIONAL PRANK DEMO • No GPS, device location, camera, microphone, IP tracking, or real surveillance is used. The interactive map uses public map imagery; the target, route, telemetry and alerts are simulated locally. © OpenStreetMap contributors. Satellite imagery © Esri.</footer>
+<footer class="disclaimer">FICTIONAL PRANK DEMO • No GPS, device location, camera, microphone, IP tracking, or real surveillance is used. Public map landmarks are real; CTN target movement, routes, telemetry and alerts are simulated locally. © OpenStreetMap contributors. Satellite imagery © Esri.</footer>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="js/tracker.js" defer></script>

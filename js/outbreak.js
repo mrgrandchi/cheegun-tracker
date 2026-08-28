@@ -105,4 +105,86 @@ function saveGame(){localStorage.setItem("outbreak_save",JSON.stringify({player,
 function loadGame(){try{const s=JSON.parse(localStorage.getItem("outbreak_save")||"null");if(!s)return false;player=s.player;survivor.setLatLng(player);health=s.health;hunger=s.hunger;thirst=s.thirst;stamina=s.stamina;minutes=s.minutes;(s.found||[]).forEach(id=>{found.add(id);const b=buildingById.get(id);if(b)setBuilding(b,"DISCOVERED")});(s.searched||[]).forEach(id=>{searched.add(id);const b=buildingById.get(id);if(b)setBuilding(b,"LOOTED")});(s.claimed||[]).forEach(id=>{const h=safehouses.find(x=>x.id===id);if(h){h.claimed=true;h.layer.setStyle({color:"#59ff87",fillColor:"#59ff87",fillOpacity:.08})}});(s.completed||[]).forEach(id=>{const o=objectives.find(x=>x.id===id);if(o)o.complete=true});const o=objectives.find(x=>x.id===s.objective&&!x.complete)||objectives.find(x=>!x.complete);if(o)activateObjective(o);return true}catch{return false}}
 let last=performance.now();
 function loop(now){const dt=now-last;last=now;if(!gameOver){hunger=clamp(hunger-dt/180000,0,100);thirst=clamp(thirst-dt/120000,0,100);if(hunger<20||thirst<15)health=clamp(health-dt/120000,0,100);if(health<=0){gameOver=true;$( "objective").textContent="☠ SURVIVOR LOST"}}updateNoise();updateWeather();zombieAI();if(now-lastAutosave>12000){saveGame();lastAutosave=now}requestAnimationFrame(loop)}
-saveInv(inv());explored=[[...player]];const loaded=loadGame();reveal();discover();hud();if(!currentObjective)activateObjective(objectives[0]);log(loaded?"SESSION RESTORED • TACTICAL WORLD PERSISTENT":"TACTICAL WORLD LAYER 2 ONLINE");log("10 LOCATIONS • 3 OBJECTIVES • 3 SAFEHOUSES");log("12 INFECTED ACTIVE • WEATHER SYSTEM ONLINE");log("CLICK SURVIVOR TO BEGIN");requestAnimationFrame(loop);setTimeout(()=>map.invalidateSize(),250)})();
+
+// PHASE 3 // SURVIVAL SYSTEMS EXTENSION
+let infection=0,weapon=null,ammo=0,nightHorde=false,lastHorde=0,lastEvent=0;
+const weapons={"🔪 Kitchen Knife":{name:"KITCHEN KNIFE",damage:42,noise:7,uses:999},"🪓 Rescue Axe":{name:"RESCUE AXE",damage:64,noise:15,uses:999},"🔧 Crowbar":{name:"CROWBAR",damage:52,noise:12,uses:999},"🔦 Heavy Flashlight":{name:"HEAVY FLASHLIGHT",damage:18,noise:4,uses:999},"🛠️ Advanced Tool Kit":{name:"IMPROVISED TOOL",damage:28,noise:10,uses:30}};
+function phase3Inv(){return inv()}
+function equipBest(){
+ const a=phase3Inv(),w=a.filter(x=>weapons[x]).sort((a,b)=>weapons[b].damage-weapons[a].damage)[0];
+ weapon=w||null; const s=$("combatStatus"); if(s)s.textContent=weapon?weapons[weapon].name+" • DMG "+weapons[weapon].damage:"UNARMED • FIND A WEAPON";
+}
+function phase3Hud(){
+ const ib=$("infectionBar"),it=$("infection"),c=$("condition");
+ if(ib){ib.style.width=clamp(infection,0,100)+"%";it.textContent=Math.round(infection)+"%"}
+ if(c)c.textContent=infection>70?"CRITICAL":infection>35?"INFECTED":health<30?"WOUNDED":"STABLE";
+ const h=Math.floor(minutes/60)%24,isNight=h>=20||h<6;
+ $("day").textContent="DAY "+String(Math.floor(minutes/1440)+1).padStart(2,"0")+(isNight?" • NIGHT":"");
+ document.body.classList.toggle("outbreak-night",isNight);
+}
+function closestThreat(){
+ return zombies.filter(z=>dist(z.pos,player)<72).sort((a,b)=>dist(a.pos,player)-dist(b.pos,player))[0];
+}
+function killZombie(z){
+ const i=zombies.indexOf(z); if(i>=0)zombies.splice(i,1);
+ map.removeLayer(z.marker);map.removeLayer(z.awareness);log("INFECTED NEUTRALIZED");
+}
+function attack(){
+ if(gameOver||moving)return;const z=closestThreat();
+ if(!z)return log("NO INFECTED IN DEFENSE RANGE");
+ const w=weapon&&weapons[weapon]; if(!w){emitNoise(10,"PANIC DEFENSE");health=clamp(health-8,0,100);infection=clamp(infection+4,0,100);log("UNARMED STRUGGLE • INJURED");hud();phase3Hud();return}
+ stamina=clamp(stamina-9,0,100);emitNoise(w.noise,"COMBAT");const hit=.62+Math.min(.22,stamina/500),damage=w.damage*(.72+Math.random()*.55);
+ if(Math.random()<hit&&damage>=32){killZombie(z);log(w.name+" • TARGET DOWN")}else{health=clamp(health-(5+Math.random()*9),0,100);infection=clamp(infection+3,0,100);log("COMBAT CONTACT • WOUND RECEIVED")}
+ hud();phase3Hud();
+}
+function consume(){
+ const a=phase3Inv();let idx=a.findIndex(x=>x.includes("Water"));let kind="water";
+ if(idx<0){idx=a.findIndex(x=>x.includes("Canned Food"));kind="food"}
+ if(idx<0){idx=a.findIndex(x=>/Bandage|Medical Kit|Trauma Kit/.test(x));kind="med"}
+ if(idx<0){idx=a.findIndex(x=>/Painkillers/.test(x));kind="pain"}
+ if(idx<0)return log("NO USABLE SURVIVAL ITEM");
+ const item=a.splice(idx,1)[0];
+ if(kind==="water")thirst=clamp(thirst+34,0,100);
+ if(kind==="food")hunger=clamp(hunger+28,0,100);
+ if(kind==="med"){health=clamp(health+26,0,100);infection=clamp(infection-10,0,100)}
+ if(kind==="pain")health=clamp(health+8,0,100);
+ saveInv(a);equipBest();log("USED • "+item);hud();phase3Hud();
+}
+const recipes=[
+ {name:"IMPROVISED BANDAGE",need:["🩹 Bandage"],make:"🩹 Trauma Bandage",desc:"Improves emergency healing"},
+ {name:"FIELD WEAPON",need:["🔧 Tool Kit"],make:"🛠️ Advanced Tool Kit",desc:"Makes a basic melee weapon"},
+ {name:"EMERGENCY CACHE",need:["🔋 Battery","📻 Radio Battery"],make:"📡 Emergency Beacon",desc:"Useful for later extraction systems"}
+];
+function craft(){
+ const a=phase3Inv(),box=$("craftList");box.innerHTML="";
+ recipes.forEach((r,i)=>{const ok=r.need.every(x=>a.includes(x));const el=document.createElement("button");el.className="game-btn";el.style.width="100%";el.style.margin="5px 0";el.textContent=(ok?"✓ ":"LOCKED • ")+r.name+" → "+r.make;el.disabled=!ok;el.onclick=()=>{const b=phase3Inv();r.need.forEach(x=>b.splice(b.indexOf(x),1));b.push(r.make);saveInv(b);equipBest();log("CRAFTED • "+r.make);craft()};box.appendChild(el)});
+ $("craftModal").classList.remove("hidden");
+}
+function spawnHorde(){
+ if(zombies.length>28)return;
+ const count=6+Math.floor(Math.random()*7);
+ for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,d=.0014+Math.random()*.0022,p=[player[0]+Math.cos(a)*d,player[1]+Math.sin(a)*d];if(blocked(L.latLng(p)))continue;
+ const id="h"+Date.now()+i,z={id,pos:p,state:"INVESTIGATE",target:[...player],lastSeen:0,wanderUntil:0};
+ z.awareness=L.circle(p,{radius:70,color:"#ff3148",weight:1,opacity:.15,fillColor:"#ff3148",fillOpacity:.025,interactive:false}).addTo(map);
+ z.marker=L.marker(p,{icon:icon("zombie","●",18),zIndexOffset:450}).addTo(map);z.marker.bindTooltip("INFECTED • HORDE",{direction:"top"});zombies.push(z);
+ }
+ log("⚠ HORDE EVENT • MULTIPLE INFECTED APPROACHING");$("threat").textContent="THREAT: EXTREME";emitNoise(55,"HORDE DISTURBANCE");
+}
+function phase3Tick(){
+ if(gameOver)return;
+ const hour=Math.floor(minutes/60)%24,isNight=hour>=20||hour<6;
+ if(isNight&&!nightHorde){nightHorde=true;log("NIGHT FALLS • INFECTED ACTIVITY INCREASES");}
+ if(!isNight&&nightHorde){nightHorde=false;$("threat").textContent="THREAT: MODERATE";log("DAYBREAK • VISIBILITY IMPROVING");}
+ if(isNight&&Date.now()-lastHorde>90000){spawnHorde();lastHorde=Date.now()}
+ if(Date.now()-lastEvent>120000&&Math.random()<.38){lastEvent=Date.now();const events=["DISTANT SCREAMS","CAR ALARM","GUNSHOT ECHO","RADIO STATIC"];const e=events[Math.floor(Math.random()*events.length)];log("WORLD EVENT • "+e);if(Math.random()<.55)emitNoise(30,e)}
+ if(infection>0)infection=clamp(infection+(health<35?.08:.025),0,100);
+ if(infection>55)health=clamp(health-.06,0,100);
+ if(infection>=100){gameOver=true;health=0;log("INFECTION OVERWHELMED THE SURVIVOR");$("objective").textContent="☠ INFECTION TERMINAL"}
+ phase3Hud();
+}
+document.addEventListener("keydown",e=>{if(e.code==="Space"){e.preventDefault();attack()}});
+$("attackBtn")?.addEventListener("click",attack);$("consumeBtn")?.addEventListener("click",consume);$("craftBtn")?.addEventListener("click",craft);$("craftClose")?.addEventListener("click",()=>$("craftModal").classList.add("hidden"));
+const _phase3Save=saveGame; saveGame=function(){_phase3Save();try{const s=JSON.parse(localStorage.getItem("outbreak_save")||"{}");s.infection=infection;s.weapon=weapon;localStorage.setItem("outbreak_save",JSON.stringify(s))}catch{}};
+const _phase3Load=loadGame; loadGame=function(){const ok=_phase3Load();try{const s=JSON.parse(localStorage.getItem("outbreak_save")||"{}");infection=s.infection||0;weapon=s.weapon||null}catch{};return ok};
+setInterval(()=>{phase3Tick();equipBest()},1000);
+\nsaveInv(inv());explored=[[...player]];const loaded=loadGame();reveal();discover();hud();if(!currentObjective)activateObjective(objectives[0]);log(loaded?"SESSION RESTORED • TACTICAL WORLD PERSISTENT":"TACTICAL WORLD LAYER 2 ONLINE");log("10 LOCATIONS • 3 OBJECTIVES • 3 SAFEHOUSES");log("12 INFECTED ACTIVE • WEATHER SYSTEM ONLINE");log("CLICK SURVIVOR TO BEGIN");requestAnimationFrame(loop);setTimeout(()=>map.invalidateSize(),250)})();

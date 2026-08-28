@@ -1,0 +1,2 @@
+/* Phase 8A.2 — mechanical regional modifiers */
+#siouxAirfieldExtract{border-color:#668ca5;background:#0d1820}.air-evac-card{text-align:center;border-color:#668ca5}.air-evac-card h2{color:#a9d1e7}.air-evac-card p{color:#9ba9b0;line-height:1.55}.air-evac-card #airStart{min-width:170px}.sioux-poi::after{content:"SEARCH";font:700 5px monospace;color:#6f9b7c;opacity:0}.sioux-poi:hover::after{opacity:1}@media(max-width:600px){#siouxAirfieldExtract{width:100%}}

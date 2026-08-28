@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09080c"><title>OUTBREAK // THUNDER BAY</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/outbreak.css">
+</head>
+<body>
+<main class="game-shell">
+<header class="game-top"><a href="index.html" class="back">← CTN TRACKER</a><div class="title"><span>THUNDER BAY</span><h1>OUTBREAK SURVIVAL</h1></div><div class="status"><b id="day">DAY 01</b><span id="gameTime">08:00</span><em>SIMULATION</em></div></header>
+<section class="game-grid">
+<div class="map-panel"><div class="map-head"><b>TACTICAL CITY MAP</b><span id="threat">THREAT: MODERATE</span></div><div id="gameMap"></div><div class="map-tip">TAP MAP TO MOVE • TAP BUILDINGS TO SCAVENGE</div><div class="legend"><span class="survivor-dot"></span>SURVIVOR <span class="zombie-dot"></span>INFECTED <span class="loot-dot"></span>LOOT</div></div>
+<aside class="hud">
+<section class="hud-card survivor-card"><div class="hud-label">SURVIVOR // ALPHA-01</div><div class="bars">
+<div><span>HEALTH</span><i><b id="healthBar" style="width:100%"></b></i><strong id="health">100%</strong></div>
+<div><span>HUNGER</span><i><b id="hungerBar" style="width:82%"></b></i><strong id="hunger">82%</strong></div>
+<div><span>THIRST</span><i><b id="thirstBar" style="width:76%"></b></i><strong id="thirst">76%</strong></div>
+<div><span>STAMINA</span><i><b id="staminaBar" style="width:94%"></b></i><strong id="stamina">94%</strong></div>
+</div></section>
+<section class="hud-card"><div class="hud-label">INVENTORY <span id="inventoryCount">0 / 8</span></div><div class="inventory" id="inventory"><span>EMPTY</span></div></section>
+<section class="hud-card"><div class="hud-label">CURRENT OBJECTIVE</div><div class="objective" id="objective">FIND SUPPLIES • SURVIVE THE DAY</div></section>
+<section class="hud-card feed-card"><div class="hud-label">SURVIVAL LOG</div><div id="gameFeed"></div></section>
+</aside>
+</section>
+<div class="game-actions"><button id="scavengeBtn" class="game-btn loot">⌕ SCAVENGE NEARBY</button><button id="restBtn" class="game-btn">◐ REST</button><button id="newGameBtn" class="game-btn danger">↻ RESET RUN</button></div>
+<div id="eventModal" class="modal hidden"><div class="modal-card"><span class="modal-kicker">OUTBREAK EVENT</span><h2 id="eventTitle">MOVEMENT DETECTED</h2><p id="eventText">A group of infected is moving nearby.</p><div class="modal-actions"><button data-action="hide">HIDE</button><button data-action="run">RUN</button></div></div></div>
+<footer>FICTIONAL STRATEGY GAME • SIMULATED ENTITIES • NOT A REAL-WORLD THREAT MAP</footer>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="js/outbreak.js"></script>
+</body></html>

@@ -18,12 +18,12 @@
 <div><span>THIRST</span><i><b id="thirstBar" style="width:76%"></b></i><strong id="thirst">76%</strong></div>
 <div><span>STAMINA</span><i><b id="staminaBar" style="width:94%"></b></i><strong id="stamina">94%</strong></div>
 </div></section>
-<section class="hud-card"><div class="hud-label">INVENTORY <span id="inventoryCount">0 / 8</span></div><div class="inventory" id="inventory"><span>EMPTY</span></div></section>
+<section class="hud-card inventory-launch"><div class="hud-label">INVENTORY <span id="inventoryCount">0 / 8</span></div><div class="inventory" id="inventory"><span>EMPTY</span></div><a class="open-inventory" href="inventory.html">OPEN TACTICAL INVENTORY →</a></section>
 <section class="hud-card"><div class="hud-label">CURRENT OBJECTIVE</div><div class="objective" id="objective">FIND SUPPLIES • SURVIVE THE DAY</div></section>
 <section class="hud-card feed-card"><div class="hud-label">SURVIVAL LOG</div><div id="gameFeed"></div></section>
 </aside>
 </section>
-<div class="game-actions"><button id="scavengeBtn" class="game-btn loot">⌕ SCAVENGE NEARBY</button><button id="restBtn" class="game-btn">◐ REST</button><button id="newGameBtn" class="game-btn danger">↻ RESET RUN</button></div>
+<div class="game-actions"><button id="scavengeBtn" class="game-btn loot">⌕ SCAVENGE NEARBY</button><a href="inventory.html" class="game-btn inventory-btn">🎒 INVENTORY</a><button id="restBtn" class="game-btn">◐ REST</button><button id="newGameBtn" class="game-btn danger">↻ RESET RUN</button></div>
 <div id="eventModal" class="modal hidden"><div class="modal-card"><span class="modal-kicker">OUTBREAK EVENT</span><h2 id="eventTitle">MOVEMENT DETECTED</h2><p id="eventText">A group of infected is moving nearby.</p><div class="modal-actions"><button data-action="hide">HIDE</button><button data-action="run">RUN</button></div></div></div>
 <footer>FICTIONAL STRATEGY GAME • SIMULATED ENTITIES • NOT A REAL-WORLD THREAT MAP</footer>
 </main>

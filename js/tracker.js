@@ -1,187 +1,101 @@
 (() => {
   "use strict";
 
-  const mapEl = document.getElementById("trackingMap");
-  const signalValue = document.getElementById("signalValue");
-  const signalBar = document.getElementById("signalBar");
-  const movementValue = document.getElementById("movementValue");
-  const pingValue = document.getElementById("pingValue");
-  const zoneLabel = document.getElementById("zoneLabel");
-  const activityFeed = document.getElementById("activityFeed");
-  const speedValue = document.getElementById("speedValue");
-  const headingValue = document.getElementById("headingValue");
-  const scanButton = document.getElementById("scanButton");
-  const pingButton = document.getElementById("pingButton");
-  const alertButton = document.getElementById("alertButton");
-
+  const $ = id => document.getElementById(id);
+  const mapEl = $("trackingMap"), signalValue = $("signalValue"), signalBar = $("signalBar");
+  const movementValue = $("movementValue"), pingValue = $("pingValue"), zoneLabel = $("zoneLabel");
+  const activityFeed = $("activityFeed"), speedValue = $("speedValue"), headingValue = $("headingValue");
+  const scanButton = $("scanButton"), pingButton = $("pingButton"), alertButton = $("alertButton");
   if (!mapEl || typeof L === "undefined") return;
 
   const thunderBay = [48.3809, -89.2477];
   const map = L.map(mapEl, { zoomControl: true, scrollWheelZoom: true }).setView(thunderBay, 14);
-
-  const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  });
-  const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 19,
-    attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
-  });
-  const dark = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 20,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-  });
+  const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+  const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community' });
+  const dark = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 20, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>' });
   street.addTo(map);
 
-  // Fictional walking/transit loop kept on the developed street grid west of the river.
-  // It is animation data only and never comes from a person's device or GPS.
-  const route = [
-    [48.38255, -89.24835], [48.38255, -89.25015], [48.38220, -89.25205],
-    [48.38095, -89.25215], [48.37965, -89.25205], [48.37835, -89.25195],
-    [48.37825, -89.24980], [48.37825, -89.24795], [48.37685, -89.24785],
-    [48.37555, -89.24905], [48.37560, -89.25145], [48.37705, -89.25420],
-    [48.37900, -89.25605], [48.38105, -89.25570], [48.38300, -89.25385],
-    [48.38405, -89.25165], [48.38355, -89.24955]
+  // These are only fictional waypoints. OSRM turns them into real road geometry.
+  const waypoints = [
+    [48.38145, -89.24705], [48.38015, -89.24105], [48.38295, -89.23825],
+    [48.38405, -89.24220], [48.38200, -89.24510], [48.37990, -89.24620]
   ];
 
-  const targetIcon = L.divIcon({
-    className: "",
-    html: '<div class="target-marker"><span class="target-core"></span></div>',
-    iconSize: [34, 34],
-    iconAnchor: [17, 17]
-  });
-
-  let targetIndex = 0;
-  const target = L.marker(route[0], { icon: targetIcon }).addTo(map);
-  target.bindPopup('<div class="target-popup">CHEEGUN SIGNAL<br><span>SIMULATED TARGET</span></div>');
-
-  const trail = L.polyline([route[0]], {
-    color: "#62ff87",
-    weight: 3,
-    opacity: 0.72,
-    dashArray: "7 8"
-  }).addTo(map);
-
-  const movementSegments = [
-    { name: "DOWNTOWN WALK", mode: "WALKING", min: 3.1, max: 4.8, ticks: 5 },
-    { name: "BUS STOP • SIMULATED", mode: "BUS STOP", min: 0, max: 0, ticks: 4 },
-    { name: "MAIN STREET TRANSIT", mode: "ON BUS", min: 18, max: 34, ticks: 7 },
-    { name: "DOWNTOWN WALK", mode: "WALKING", min: 3.0, max: 4.6, ticks: 6 },
-    { name: "BUS STOP • SIMULATED", mode: "BUS STOP", min: 0, max: 0, ticks: 4 },
-    { name: "RETURN TRANSIT", mode: "ON BUS", min: 20, max: 38, ticks: 7 }
+  const targetIcon = L.divIcon({ className: "", html: '<div class="target-marker"><span class="target-core"></span></div>', iconSize: [34,34], iconAnchor: [17,17] });
+  let target = null, trail = null, route = [], routeIndex = 0, signal = 94;
+  let modeIndex = 0, modeTicks = 0;
+  const modes = [
+    { name: "WALKING", label: "DOWNTOWN WALK", min: 3.0, max: 4.8, ticks: 18 },
+    { name: "BUS STOP", label: "BUS STOP • SIMULATED", min: 0, max: 0, ticks: 8 },
+    { name: "ON BUS", label: "TRANSIT CORRIDOR", min: 18, max: 36, ticks: 30 },
+    { name: "WALKING", label: "WATERFRONT WALK", min: 3.1, max: 4.7, ticks: 18 },
+    { name: "BUS STOP", label: "BUS STOP • SIMULATED", min: 0, max: 0, ticks: 8 },
+    { name: "ON BUS", label: "RETURN TRANSIT", min: 20, max: 38, ticks: 30 }
   ];
-
-  let segment = 0;
-  let segmentTick = 0;
-  let signal = 94;
-  let trailPoints = [route[0]];
 
   function addEvent(message, live = true) {
-    const e = document.createElement("div");
-    e.className = live ? "event liveevent" : "event";
-    e.innerHTML = `<b>[${live ? "LIVE" : "SYS"}]</b> ${message}`;
-    activityFeed.prepend(e);
+    const e = document.createElement("div"); e.className = live ? "event liveevent" : "event";
+    e.innerHTML = `<b>[${live ? "LIVE" : "SYS"}]</b> ${message}`; activityFeed.prepend(e);
     while (activityFeed.children.length > 8) activityFeed.lastElementChild.remove();
   }
-
-  function updatePing() {
-    pingValue.textContent = new Date().toLocaleTimeString([], { hour12: false });
+  function pingTime() { pingValue.textContent = new Date().toLocaleTimeString([], { hour12:false }); }
+  function heading(a,b) {
+    const dy=b[0]-a[0], dx=b[1]-a[1], deg=(Math.atan2(dx,dy)*180/Math.PI+360)%360;
+    const dirs=["N","NE","E","SE","S","SW","W","NW"];
+    return `${Math.round(deg)}° ${dirs[Math.round(deg/45)%8]}`;
+  }
+  function setTelemetry(a,b) {
+    const m=modes[modeIndex];
+    const speed=m.min===m.max?m.min:m.min+Math.random()*(m.max-m.min);
+    signal=Math.max(80,Math.min(99,signal+Math.floor(Math.random()*5)-2));
+    signalValue.textContent=`${signal}%`; signalBar.style.width=`${signal}%`;
+    movementValue.textContent=m.name; speedValue.textContent=`${speed.toFixed(1)} KM/H`;
+    headingValue.textContent=heading(a,b); zoneLabel.textContent=m.label; pingTime();
   }
 
-  function headingBetween(a, b) {
-    const dy = b[0] - a[0];
-    const dx = b[1] - a[1];
-    const angle = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
-    const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-    return `${Math.round(angle)}° ${dirs[Math.round(angle / 45) % 8]}`;
+  async function buildRoadRoute() {
+    addEvent("Road-network route request initialized", false);
+    try {
+      const coords = waypoints.map(([lat,lon]) => `${lon},${lat}`).join(";");
+      const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=false`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("routing service unavailable");
+      const data = await response.json();
+      if (!data.routes?.[0]?.geometry?.coordinates?.length) throw new Error("no route");
+      route = data.routes[0].geometry.coordinates.map(([lon,lat]) => [lat,lon]);
+      addEvent(`Road geometry acquired • ${route.length} mapped points`);
+    } catch (err) {
+      // Safe fallback: the app still works without the external routing service.
+      route = waypoints.slice();
+      addEvent("Road routing unavailable • using compact simulated fallback", false);
+    }
+    routeIndex=0;
+    target=L.marker(route[0],{icon:targetIcon}).addTo(map);
+    target.bindPopup('<div class="target-popup">CHEEGUN SIGNAL<br><span>SIMULATED TARGET</span></div>');
+    trail=L.polyline([route[0]],{color:"#62ff87",weight:3,opacity:.72,dashArray:"7 8"}).addTo(map);
+    map.fitBounds(L.latLngBounds(route),{padding:[35,35]});
+    addEvent("Target acquired • road-following simulation active");
+    move();
   }
 
-  function advanceSegment() {
-    segment = (segment + 1) % movementSegments.length;
-    segmentTick = 0;
-    const state = movementSegments[segment];
-    addEvent(`${state.mode} • ${state.name.toLowerCase()}`);
+  function move() {
+    if (!route.length || !target) return;
+    const current=route[routeIndex], nextIndex=(routeIndex+1)%route.length, next=route[nextIndex];
+    routeIndex=nextIndex; target.setLatLng(next);
+    const points=trail.getLatLngs(); points.push(next); while(points.length>20) points.shift(); trail.setLatLngs(points);
+    modeTicks++;
+    if(modeTicks>=modes[modeIndex].ticks){ modeIndex=(modeIndex+1)%modes.length; modeTicks=0; addEvent(`${modes[modeIndex].name} • ${modes[modeIndex].label.toLowerCase()}`); }
+    setTelemetry(current,next);
   }
 
-  function moveAlongRoute() {
-    const current = route[targetIndex];
-    const nextIndex = (targetIndex + 1) % route.length;
-    const next = route[nextIndex];
-    targetIndex = nextIndex;
-    target.setLatLng(next);
+  function temp(btn,text,ms){const old=btn.textContent;btn.disabled=true;btn.textContent=text;setTimeout(()=>{btn.disabled=false;btn.textContent=old;},ms);}
+  function setMapMode(mode){[street,satellite,dark].forEach(l=>{if(map.hasLayer(l))map.removeLayer(l)}); if(mode==="satellite")satellite.addTo(map); else if(mode==="dark")dark.addTo(map); else street.addTo(map); addEvent(`Map layer switched • ${mode}`,false);}
+  document.querySelectorAll(".map-mode").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".map-mode").forEach(x=>x.classList.remove("active"));b.classList.add("active");setMapMode(b.dataset.map);}));
+  scanButton.addEventListener("click",()=>{temp(scanButton,"⌛ SCANNING...",1600);addEvent("Deep scan initialized",false);setTimeout(()=>addEvent("DEEP SCAN COMPLETE • road continuity confirmed"),1600);});
+  pingButton.addEventListener("click",()=>{temp(pingButton,"◉ PINGING...",1100);pingTime();if(target)target.openPopup();addEvent("OUTBOUND PING SENT • simulated signal responded");});
+  alertButton.addEventListener("click",()=>{temp(alertButton,"⚠ ALERT SENT",1400);addEvent("MAXIMUM CHEEGUN ALERT • PRANK MODE ACTIVATED");});
 
-    trailPoints.push(next);
-    if (trailPoints.length > 12) trailPoints.shift();
-    trail.setLatLngs(trailPoints);
-
-    segmentTick += 1;
-    const state = movementSegments[segment];
-    if (segmentTick >= state.ticks) advanceSegment();
-
-    const active = movementSegments[segment];
-    const speed = active.min === active.max
-      ? active.min
-      : active.min + Math.random() * (active.max - active.min);
-
-    signal = Math.max(80, Math.min(99, signal + Math.floor(Math.random() * 5) - 2));
-    signalValue.textContent = `${signal}%`;
-    signalBar.style.width = `${signal}%`;
-    movementValue.textContent = active.mode;
-    speedValue.textContent = `${speed.toFixed(1)} KM/H`;
-    headingValue.textContent = headingBetween(current, next);
-    zoneLabel.textContent = active.name;
-    updatePing();
-  }
-
-  function temporary(button, text, duration) {
-    const old = button.textContent;
-    button.disabled = true;
-    button.textContent = text;
-    window.setTimeout(() => {
-      button.disabled = false;
-      button.textContent = old;
-    }, duration);
-  }
-
-  function setMapMode(mode) {
-    [street, satellite, dark].forEach(layer => {
-      if (map.hasLayer(layer)) map.removeLayer(layer);
-    });
-    if (mode === "satellite") satellite.addTo(map);
-    else if (mode === "dark") dark.addTo(map);
-    else street.addTo(map);
-    addEvent(`Map layer switched • ${mode}`, false);
-  }
-
-  document.querySelectorAll(".map-mode").forEach(button => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".map-mode").forEach(b => b.classList.remove("active"));
-      button.classList.add("active");
-      setMapMode(button.dataset.map);
-    });
-  });
-
-  scanButton.addEventListener("click", () => {
-    temporary(scanButton, "⌛ SCANNING...", 1600);
-    addEvent("Deep scan initialized", false);
-    window.setTimeout(() => addEvent("DEEP SCAN COMPLETE • route continuity confirmed"), 1600);
-  });
-
-  pingButton.addEventListener("click", () => {
-    temporary(pingButton, "◉ PINGING...", 1100);
-    updatePing();
-    target.openPopup();
-    addEvent("OUTBOUND PING SENT • simulated signal responded");
-  });
-
-  alertButton.addEventListener("click", () => {
-    temporary(alertButton, "⚠ ALERT SENT", 1400);
-    addEvent("MAXIMUM CHEEGUN ALERT • PRANK MODE ACTIVATED");
-  });
-
-  updatePing();
-  addEvent("Route simulation initialized • street-grid path only", false);
-  addEvent("Target acquired • walking/transit simulation active");
-  moveAlongRoute();
-  window.setInterval(moveAlongRoute, 2800);
+  pingTime();
+  buildRoadRoute();
+  setInterval(move,2800);
 })();

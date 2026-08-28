@@ -33,13 +33,15 @@
   });
   street.addTo(map);
 
-  // Fictional route: follows a compact local path so the target appears to walk/ride rather than teleport.
+  // Fictional walking/transit loop kept on the developed street grid west of the river.
+  // It is animation data only and never comes from a person's device or GPS.
   const route = [
-    [48.38145, -89.24705], [48.38130, -89.24595], [48.38105, -89.24465],
-    [48.38078, -89.24335], [48.38045, -89.24205], [48.38010, -89.24070],
-    [48.38032, -89.23925], [48.38100, -89.23835], [48.38200, -89.23795],
-    [48.38280, -89.23830], [48.38320, -89.23935], [48.38300, -89.24055],
-    [48.38250, -89.24175], [48.38210, -89.24300], [48.38185, -89.24430]
+    [48.38255, -89.24835], [48.38255, -89.25015], [48.38220, -89.25205],
+    [48.38095, -89.25215], [48.37965, -89.25205], [48.37835, -89.25195],
+    [48.37825, -89.24980], [48.37825, -89.24795], [48.37685, -89.24785],
+    [48.37555, -89.24905], [48.37560, -89.25145], [48.37705, -89.25420],
+    [48.37900, -89.25605], [48.38105, -89.25570], [48.38300, -89.25385],
+    [48.38405, -89.25165], [48.38355, -89.24955]
   ];
 
   const targetIcon = L.divIcon({
@@ -63,10 +65,10 @@
   const movementSegments = [
     { name: "DOWNTOWN WALK", mode: "WALKING", min: 3.1, max: 4.8, ticks: 5 },
     { name: "BUS STOP • SIMULATED", mode: "BUS STOP", min: 0, max: 0, ticks: 4 },
-    { name: "TRANSIT CORRIDOR", mode: "ON BUS", min: 18, max: 34, ticks: 7 },
-    { name: "WATERFRONT WALK", mode: "WALKING", min: 3.0, max: 4.6, ticks: 6 },
+    { name: "MAIN STREET TRANSIT", mode: "ON BUS", min: 18, max: 34, ticks: 7 },
+    { name: "DOWNTOWN WALK", mode: "WALKING", min: 3.0, max: 4.6, ticks: 6 },
     { name: "BUS STOP • SIMULATED", mode: "BUS STOP", min: 0, max: 0, ticks: 4 },
-    { name: "RETURN CORRIDOR", mode: "ON BUS", min: 20, max: 38, ticks: 7 }
+    { name: "RETURN TRANSIT", mode: "ON BUS", min: 20, max: 38, ticks: 7 }
   ];
 
   let segment = 0;
@@ -178,7 +180,7 @@
   });
 
   updatePing();
-  addEvent("Route simulation initialized • local path only", false);
+  addEvent("Route simulation initialized • street-grid path only", false);
   addEvent("Target acquired • walking/transit simulation active");
   moveAlongRoute();
   window.setInterval(moveAlongRoute, 2800);

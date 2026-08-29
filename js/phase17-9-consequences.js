@@ -22,7 +22,7 @@ function fail({cause="HEALTH_DEPLETED",inventory=null}={}){
  s.injury=inj;s.failedRuns++;s.recoveryUntil=Date.now()+inj.recovery*86400000;s.lastFailure={cause,at:Date.now(),lost,kept:remaining,injury:inj.name};save(s);
  return{ok:true,injury:inj,lost,remaining,recovery:isRecovering(),profile:p}
 }
-function recover(){const s=load(),p=window.CheegunState?.load?.();if(!s.injury)return{ok:false,reason:"NO_INJURY"};const cost=s.injury.creditCost;if((p?.credits||0)<cost)return{ok:false,reason:"INSUFFICIENT_CREDITS",cost};p.credits-=cost;window.CheegunState.save(p);s.injury=null;s.recoveryUntil=0;save(s);return{ok:true,cost}}
+function recover(){const s=load(),p=window.CheegunState?.load?.();if(!s.injury)return{ok:false,reason:"NO_INJURY"};const discount=window.CheegunFactions?.modifier?.("medical")?.treatmentDiscount||0;const cost=Math.max(0,Math.round(s.injury.creditCost*(1-discount)));if((p?.credits||0)<cost)return{ok:false,reason:"INSUFFICIENT_CREDITS",cost};p.credits-=cost;window.CheegunState.save(p);s.injury=null;s.recoveryUntil=0;save(s);return{ok:true,cost}}
 function status(){const s=load();return{...s,recovering:isRecovering(),hoursRemaining:Math.max(0,Math.ceil((s.recoveryUntil-Date.now())/3600000))}}
 window.CheegunConsequences={KEY,load,save,fail,recover,status,injuryTable};
 })();

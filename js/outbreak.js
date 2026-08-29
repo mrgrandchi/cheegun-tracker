@@ -117,8 +117,9 @@ function activateObjective(o){currentObjective=o;o.active=true;const target=buil
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
 function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}\nfunction phase1714OutbreakPressure(){const danger=Math.round(Math.random()*5)+2;window.CheegunDefense?.raise?.(danger,"EXPEDITION_ACTIVITY");const d=window.CheegunDefense?.status?.();if(d?.warning)log("⚠ SAFEHOUSE THREAT RISING • READINESS "+Math.round(d.readiness))}
+function phase1721CommunityTick(){return window.CheegunSurvivorCommunity?.tick?.()}
 function phase1720MissionTick(){const before=window.CheegunSurvivorMissions?.summary?.().active?.length||0;const r=window.CheegunSurvivorMissions?.tick?.();if(r&&r.active.length<before)log("SURVIVOR TEAM RETURNED • CHECK SAFEHOUSE OPERATIONS");return r}
-function phase1719EmergencyTick();phase1720MissionTick(){const e=window.CheegunDistrictEvents?.tick?.();if(e)log(e.icon+" EMERGENCY • "+e.name+" • "+e.districtName);return e}
+function phase1719EmergencyTick(){const e=window.CheegunDistrictEvents?.tick?.();if(e)log(e.icon+" EMERGENCY • "+e.name+" • "+e.districtName);return e}
 function phase1719CheckTargetEvent(p){const t=(()=>{try{return JSON.parse(localStorage.getItem("cheegunFastTravelTarget")||"null")}catch{return null}})();if(t?.eventId&&window.CheegunDistrictEvents?.get?.(t.eventId)){log("EMERGENCY RESPONSE ZONE • "+p.name);return t.eventId}return null}
 function phase1717ForwardBaseIntel(p){const d=window.CheegunDistrictControl?.districtForPOI?.(p);if(!d)return null;const b=window.CheegunForwardBases?.bonuses?.(d.id)||{};if(b.intel)log("📡 FORWARD BASE INTEL • "+d.name+" • ACTIVE");return b}
 function phase1716DistrictOperation(p,type="SEARCH"){const r=window.CheegunDistrictControl?.operation?.(p,{type});if(!r)return null;const d=r.district;log((r.liberated?"✓ DISTRICT LIBERATED • ":"DISTRICT CONTROL • ")+d.name+" • INF "+Math.round(d.infestation)+"% • CTRL "+Math.round(d.control)+"%");return r}
@@ -126,7 +127,7 @@ function phase1715EvolveOutbreak(){const r=window.CheegunOutbreakEvolution?.adva
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick();phase1720MissionTick();window.CheegunSurvivorCommunity?.tick?.()}
  return result;
 }
 function phase171UseSupply(id){

@@ -117,10 +117,11 @@ function activateObjective(o){currentObjective=o;o.active=true;const target=buil
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
 function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}\nfunction phase1714OutbreakPressure(){const danger=Math.round(Math.random()*5)+2;window.CheegunDefense?.raise?.(danger,"EXPEDITION_ACTIVITY");const d=window.CheegunDefense?.status?.();if(d?.warning)log("⚠ SAFEHOUSE THREAT RISING • READINESS "+Math.round(d.readiness))}
+function phase1715EvolveOutbreak(){const r=window.CheegunOutbreakEvolution?.advanceDay?.("EXPEDITION");if(!r)return null;if(r.changed)log("☣ OUTBREAK EVOLVED • DAY "+r.day+" • "+r.stage.name);const h=window.CheegunOutbreakEvolution?.hordeCheck?.();if(h)log("⚠ HORDE MIGRATION DETECTED • SAFEHOUSE THREAT INCREASING");return r}
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak()}
  return result;
 }
 function phase171UseSupply(id){

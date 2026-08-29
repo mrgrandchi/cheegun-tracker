@@ -42,7 +42,13 @@ function run(){
  document.dispatchEvent(new CustomEvent("cheegunRuntimeTestComplete",{detail:report}));
  return report;
 }
-function waitAndRun(ms=12000){\n install();const started=Date.now();const poll=()=>{\n  if(window.cheegunGeneratedWorld&&window.cheegunGeneratedGameplay)return run();\n  if(Date.now()-started>=ms)return run();\n  setTimeout(poll,250);\n };poll();\n}
+function waitAndRun(ms=12000){
+ install();const started=Date.now();const poll=()=>{
+  if(window.cheegunGeneratedWorld&&window.cheegunGeneratedGameplay)return run();
+  if(Date.now()-started>=ms)return run();
+  setTimeout(poll,250);
+ };poll();
+}
 window.CheegunRuntimeTest={state,install,run,waitAndRun};
 install();waitAndRun();
 console.info("[CHEEGUN 16B.12] Browser runtime test harness armed.");

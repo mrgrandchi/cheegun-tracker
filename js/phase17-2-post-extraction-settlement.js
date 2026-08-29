@@ -15,8 +15,8 @@ function settle(exit){
  p.stats.lootExtracted=(p.stats.lootExtracted||0)+loot.length;
  p.stats.totalCreditsEarned=(p.stats.totalCreditsEarned||0)+credits;
  p.credits=(p.credits||0)+credits;p.xp=beforeXp+xp;p.level=S.levelFromXp(p.xp);
- p.stash=[...(p.stash||[]),...loot].slice(-80);
- const report={operation:p.lastOperation||"thunder-bay",status:"extracted",exit:exit?.name||"EXTRACTION",exitType:exit?.type||"STANDARD",endedAt:Date.now(),loot,credits,xp,beforeLevel,level:p.level,levelUp:p.level>beforeLevel,stashCount:p.stash.length};
+ const transfer=window.CheegunInventoryAuthority?.stashTransfer?.(loot);if(!transfer?.ok){p.stash=[...(p.stash||[]),...loot].slice(-80)}
+ const report={stashOverflow:transfer?.overflow||[],stashAccepted:transfer?.accepted||loot,operation:p.lastOperation||"thunder-bay",status:"extracted",exit:exit?.name||"EXTRACTION",exitType:exit?.type||"STANDARD",endedAt:Date.now(),loot,credits,xp,beforeLevel,level:p.level,levelUp:p.level>beforeLevel,stashCount:p.stash.length};
  p.lastRun=report;S.save(p);
  localStorage.setItem("cheegunLastRaidReport",JSON.stringify(report));
  localStorage.setItem(KEY,JSON.stringify(report));

@@ -117,6 +117,7 @@ function activateObjective(o){currentObjective=o;o.active=true;const target=buil
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
 function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}\nfunction phase1714OutbreakPressure(){const danger=Math.round(Math.random()*5)+2;window.CheegunDefense?.raise?.(danger,"EXPEDITION_ACTIVITY");const d=window.CheegunDefense?.status?.();if(d?.warning)log("⚠ SAFEHOUSE THREAT RISING • READINESS "+Math.round(d.readiness))}
+function phase1736RegionalThreatTick(){const before=window.CheegunRegionalThreat?.summary?.().migrations||0;const r=window.CheegunRegionalThreat?.tick?.();if(r?.migrations>before)log("☣ HORDE MIGRATION • REGIONAL THREAT MAP UPDATED");return r}
 function phase1735ConvoyTick(){const r=window.CheegunSupplyConvoys?.tick?.();if(r?.convoys?.some(c=>c.status==="LOST"))log("⚠ SUPPLY CONVOY LOST • CHECK REGIONAL LOGISTICS");return r}
 function phase1734SettlementTick(){return window.CheegunSettlementNetwork?.tick?.()}
 function phase1733SiegeTick(){const r=window.CheegunSafehouseSieges?.tick?.();if(r?.active)log("🚨 SAFEHOUSE UNDER ATTACK • "+r.active.wave+" • RETURN TO DEFEND");else if(r?.warning)log("⚠ HORDE PRESSURE • SAFEHOUSE THREAT "+r.threat+"%");return r}
@@ -140,7 +141,7 @@ function phase1715EvolveOutbreak(){const r=window.CheegunOutbreakEvolution?.adva
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick();phase1720MissionTick();window.CheegunSurvivorCommunity?.tick?.();phase1723StoryTick();phase1724CasualtyTick();phase1725RecruitmentTick();phase1726ProgressionTick();phase1727SynergyTick();phase1728EquipmentTick();phase1729NeedsTick();phase1730ProductionTick();phase1731BuildingsTick();phase1732PowerTick();phase1733SiegeTick();phase1734SettlementTick();phase1735ConvoyTick()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick();phase1720MissionTick();window.CheegunSurvivorCommunity?.tick?.();phase1723StoryTick();phase1724CasualtyTick();phase1725RecruitmentTick();phase1726ProgressionTick();phase1727SynergyTick();phase1728EquipmentTick();phase1729NeedsTick();phase1730ProductionTick();phase1731BuildingsTick();phase1732PowerTick();phase1733SiegeTick();phase1734SettlementTick();phase1735ConvoyTick();phase1736RegionalThreatTick()}
  return result;
 }
 function phase171UseSupply(id){

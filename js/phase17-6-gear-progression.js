@@ -14,7 +14,7 @@ const GEAR={
  "field-radio":{slot:"utility",name:"Field Radio",icon:"📡",rarity:"RARE",tier:3,price:1250,noiseMultiplier:.9,durability:100,desc:"Improves awareness systems."}
 };
 function base(){return{owned:["service-pistol"],equipped:{weapon:"service-pistol",backpack:null,armor:null,utility:null},durability:{}}}
-function load(){try{return{...base(),...JSON.parse(localStorage.getItem(KEY)||"{}"),equipped:{...base().equipped,...(JSON.parse(localStorage.getItem(KEY)||"{}").equipped||{})}}catch{return base()}}
+function load(){try{const stored=JSON.parse(localStorage.getItem(KEY)||"{}");return{...base(),...stored,equipped:{...base().equipped,...(stored.equipped||{})}}}catch{return base()}}
 function save(s){localStorage.setItem(KEY,JSON.stringify(s));return s}
 function owned(){return load().owned}
 function buy(id){const g=GEAR[id],p=window.CheegunState?.load?.(),s=load();if(!g)return{ok:false,reason:"UNKNOWN_GEAR"};if(s.owned.includes(id))return{ok:false,reason:"OWNED"};if((p.credits||0)<g.price)return{ok:false,reason:"INSUFFICIENT_CREDITS"};p.credits-=g.price;s.owned.push(id);s.durability[id]=g.durability;window.CheegunState.save(p);save(s);return{ok:true,gear:g}}

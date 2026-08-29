@@ -123,11 +123,13 @@ function phase171UseSupply(id){
  if(e.use==="heal")health=clamp(health+e.amount,0,100);
  if(e.use==="hunger")hunger=clamp(hunger+e.amount,0,100);
  if(e.use==="thirst")thirst=clamp(thirst+e.amount,0,100);
+ if(e.use==="ammo")window.CheegunCombatEquipment?.addAmmo?.(e.amount);
  window.cheegunExpeditionMods=window.CheegunExpeditionEffects.modifiers();
  log(e.label);hud();return{ok:true,effect:e};
 }
 window.CheegunUseSupply=phase171UseSupply;
 function phase171Damage(amount,source="THREAT"){
+ window.CheegunCombatEquipment?.applyArmorWear?.(amount);
  const reduced=Math.max(0,Math.round(amount*(1-(expeditionMods.damageReduction||0))));
  health=clamp(health-reduced,0,100);log(source+" • "+reduced+" DAMAGE");hud();return reduced;
 }
@@ -140,7 +142,20 @@ function phase173TakeLoot(items){
  return{accepted,rejected};
 }
 window.CheegunTakeLoot=phase173TakeLoot;
-function hud(){[["health",health],["hunger",hunger],["thirst",thirst],["stamina",stamina]].forEach(([k,v])=>{$(k).textContent=Math.round(v)+"%";$(k+"Bar").style.width=clamp(v,0,100)+"%"});$( "gameTime").textContent=String(Math.floor(minutes/60)%24).padStart(2,"0")+":"+String(Math.floor(minutes%60)).padStart(2,"0");survivor.getElement()?.classList.toggle("survivor-selected",selected)}
+function phase177CombatStatus(){
+ const w=window.CheegunCombatEquipment?.weapon?.();const el=$("combatStatus");if(!el)return;
+ if(!w){el.textContent="UNARMED • FIND A WEAPON";return}
+ const firearm=w.gear.id==="service-pistol",a=firearm?" • AMMO "+window.CheegunCombatEquipment.ammo():"";
+ el.textContent=w.gear.icon+" "+w.gear.name.toUpperCase()+" • DMG "+w.gear.damage+" • DUR "+w.durability+"/"+w.gear.durability+a;
+}
+function phase177Attack(){
+ const r=window.CheegunCombatEquipment?.attack?.({targetHealth:100});if(!r?.ok){log("COMBAT FAILED • "+(r?.reason||"SYSTEM"));return}
+ log("ATTACK • "+r.weapon.name+" • "+r.damage+" DMG • NOISE "+Math.round(r.noise)+(r.ammo!==undefined?" • AMMO "+r.ammo:""));
+ if(r.durability<=0)log("WEAPON BROKEN • RETURN TO SAFEHOUSE");
+ phase177CombatStatus();hud();return r;
+}
+window.CheegunAttack=phase177Attack;
+function hud(){phase177CombatStatus();[["health",health],["hunger",hunger],["thirst",thirst],["stamina",stamina]].forEach(([k,v])=>{$(k).textContent=Math.round(v)+"%";$(k+"Bar").style.width=clamp(v,0,100)+"%"});$( "gameTime").textContent=String(Math.floor(minutes/60)%24).padStart(2,"0")+":"+String(Math.floor(minutes%60)).padStart(2,"0");survivor.getElement()?.classList.toggle("survivor-selected",selected)}
 function log(m){const e=document.createElement("div");e.className="log";e.innerHTML="<b>["+$( "gameTime").textContent+"]</b> "+m;$( "gameFeed").prepend(e);while($( "gameFeed").children.length>7)$( "gameFeed").lastElementChild.remove()}
 let noise={level:0,pos:null,until:0,ring:null};
 function emitNoise(amount,label){const terrain=TERRAIN[terrainAt(L.latLng(player))]||TERRAIN.open;amount=amount*(terrain.noise/18);noise.level=clamp(Math.max(noise.level,amount),0,100);noise.pos=[...player];noise.until=Date.now()+Math.max(2200,amount*110);if(noise.ring)map.removeLayer(noise.ring);noise.ring=L.circle(player,{className:"noise-pulse",radius:Math.max(35,amount*3.2),color:"#ffb347",weight:1.5,fillColor:"#ff7a45",fillOpacity:.07,interactive:false}).addTo(map);log("NOISE "+Math.round(noise.level)+" • "+label)}

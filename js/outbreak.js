@@ -207,14 +207,23 @@ function craft(){
  $("craftModal").classList.remove("hidden");
 }
 function spawnHorde(){
- if(zombies.length>28)return;
- const count=6+Math.floor(Math.random()*7);
- for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,d=.0014+Math.random()*.0022,p=[player[0]+Math.cos(a)*d,player[1]+Math.sin(a)*d];if(blocked(L.latLng(p)))continue;
- const id="h"+Date.now()+i,z={id,pos:p,state:"INVESTIGATE",target:[...player],lastSeen:0,wanderUntil:0};
- z.awareness=L.circle(p,{radius:70,color:"#ff3148",weight:1,opacity:.15,fillColor:"#ff3148",fillOpacity:.025,interactive:false}).addTo(map);
- z.marker=L.marker(p,{icon:icon("zombie","●",18),zIndexOffset:450}).addTo(map);z.marker.bindTooltip("INFECTED • HORDE",{direction:"top"});zombies.push(z);
- }
- log("⚠ HORDE EVENT • MULTIPLE INFECTED APPROACHING");$("threat").textContent="THREAT: EXTREME";emitNoise(55,"HORDE DISTURBANCE");
+  if(zombies.length>28)return;
+  const count=6+Math.floor(Math.random()*7);
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const distance=.0014+Math.random()*.0022;
+    const p=[player[0]+Math.cos(angle)*distance,player[1]+Math.sin(angle)*distance];
+    if(blocked(L.latLng(p)))continue;
+    const id="h"+Date.now()+i;
+    const z={id,pos:p,state:"INVESTIGATE",target:[...player],lastSeen:0,wanderUntil:0};
+    z.awareness=L.circle(p,{radius:70,color:"#ff3148",weight:1,opacity:.15,fillColor:"#ff3148",fillOpacity:.025,interactive:false}).addTo(map);
+    z.marker=L.marker(p,{icon:icon("zombie","●",18),zIndexOffset:450}).addTo(map);
+    z.marker.bindTooltip("INFECTED • HORDE",{direction:"top"});
+    zombies.push(z);
+  }
+  log("HORDE EVENT • MULTIPLE INFECTED APPROACHING");
+  $("threat").textContent="THREAT: EXTREME";
+  emitNoise(55,"HORDE DISTURBANCE");
 }
 function phase16b8ThreatTick(){
  const sys=window.CheegunGeneratedLootThreat;if(!sys?.state?.enabled)return;

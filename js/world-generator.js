@@ -84,22 +84,24 @@ function fallbackWorld(region=DEFAULT,reason="REMOTE_UNAVAILABLE"){
 async function load(region=DEFAULT,{force=false}={}){
  const key=cacheKey(region.id);
  if(!force){try{const c=JSON.parse(localStorage.getItem(key)||"null");if(c?.features?.length)return c}catch{}}
- const body=query(region);
- const endpoints=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
- let last;
- for(const endpoint of endpoints){
+ const proxy=window.CheegunWorldProxyEndpoint;
+ if(proxy){
   try{
-   const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body});
+   const res=await fetch(proxy,{headers:{"Accept":"application/json"}});
    if(!res.ok)throw new Error("HTTP "+res.status);
    const json=await res.json();
-   const world={version:1,region,generatedAt:Date.now(),source:"OpenStreetMap via Overpass",features:normalize(json.elements||[])};
-   localStorage.setItem(key,JSON.stringify(world));
-   document.dispatchEvent(new CustomEvent("cheegunWorldGenerated",{detail:world}));
-   return world;
-  }catch(err){last=err}
+   const world={version:1,region,generatedAt:Date.now(),source:"CHEEGUN world proxy",features:normalize(json.elements||json.features||[])};
+   if(world.features.length){
+    localStorage.setItem(key,JSON.stringify(world));
+    document.dispatchEvent(new CustomEvent("cheegunWorldGenerated",{detail:world}));
+    return world;
+   }
+  }catch(err){console.warn("[CHEEGUN WORLD] Same-origin proxy unavailable; using deterministic fallback.",err)}
  }
- console.warn("[CHEEGUN WORLD] Remote Overpass unavailable; using built-in Thunder Bay fallback.",last);
- return fallbackWorld(region,String(last?.message||"REMOTE_UNAVAILABLE"));
+ // Browser-to-Overpass requests are intentionally disabled: public endpoints
+ // commonly reject cross-origin POSTs. Production live geography belongs behind
+ // a same-origin proxy/cache. The fallback keeps gameplay deterministic offline.
+ return fallbackWorld(region,"BROWSER_PROXY_UNAVAILABLE");
 }
 function summary(world){
  const s={total:world.features.length,roads:0,buildings:0,water:0,forest:0,residential:0,industrial:0};

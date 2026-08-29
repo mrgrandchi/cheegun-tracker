@@ -16,7 +16,7 @@ function names(){return["MAYA","ELIAS","NORA","JACK","RIVER","ANNA","MARCUS","SK
 function recruit({name=null,role="unassigned",source="EXPEDITION"}={}){const s=load(),id="survivor-"+s.nextId++;const n={id,name:name||names()[Math.floor(Math.random()*names().length)],role,source,recruitedAt:Date.now(),status:"ACTIVE"};s.population.push(n);s.rescued++;s.history.push({type:"RECRUITED",id,at:Date.now()});save(s);window.CheegunFactions?.gain?.("survivors",1,"SURVIVOR_RESCUED");return{ok:true,survivor:n}}
 function assign(id,role){const s=load(),n=s.population.find(x=>x.id===id);if(!n)return{ok:false,reason:"SURVIVOR_NOT_FOUND"};if(!ROLES[role])return{ok:false,reason:"ROLE_NOT_FOUND"};n.role=role;save(s);return{ok:true,survivor:n}}
 function bonuses(){const s=load(),count=r=>s.population.filter(x=>x.status==="ACTIVE"&&x.role===r).length;return{medic:count("medic")*.08,scavenger:count("scavenger")*.05,guard:count("guard"),trader:count("trader")*.03,engineer:count("engineer")*.08}}
-function capacity(){const p=load().population.length;return 4+Math.floor(p/3)*2}
+function capacity(){const p=load().population.length;const infra=window.CheegunInfrastructure?.bonuses?.().population||0;return 4+Math.floor(p/3)*2+infra}
 function summary(){const s=load();return{...s,roles:ROLES,bonuses:bonuses(),capacity:capacity(),active:s.population.filter(x=>x.status==="ACTIVE").length}}
 window.CheegunSettlement={KEY,ROLES,load,save,recruit,assign,bonuses,capacity,summary};
 })();

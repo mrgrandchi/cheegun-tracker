@@ -52,7 +52,27 @@ const safehouses=[
 ];
 safehouses.forEach(s=>{s.layer=L.circle(s.pos,{className:"safe-zone",radius:s.radius,color:s.claimed?"#59ff87":"#607069",weight:1.5,opacity:.7,fillColor:s.claimed?"#59ff87":"#2a3430",fillOpacity:.045,interactive:false}).addTo(map);L.marker(s.pos,{icon:icon("poi","⌂",26),opacity:.7}).bindTooltip(s.name).addTo(map);});
 
-function inside(p,poly){let x=p.lat,y=p.lng,h=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi+0.0000000001))h=!h}return h}
+function inside(p, poly) {
+  const x = p.lat;
+  const y = p.lng;
+  let h = false;
+
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0];
+    const yi = poly[i][1];
+    const xj = poly[j][0];
+    const yj = poly[j][1];
+
+    if (
+      ((yi > y) !== (yj > y)) &&
+      (x < (((xj - xi) * (y - yi)) / (yj - yi + 0.0000000001) + xi))
+    ) {
+      h = !h;
+    }
+  }
+
+  return h;
+}
 function pointSegDist(p,a,b){const x=p.lat,y=p.lng,x1=a[0],y1=a[1],x2=b[0],y2=b[1],dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((x-x1)*dx+(y-y1)*dy)/(dx*dx+dy*dy)));return Math.hypot(x-(x1+t*dx),y-(y1+t*dy))*111000}
 function nearRoad(p){return roadSegments.some(([a,b])=>pointSegDist(p,a,b)<20)}
 function terrainAt(p){if(waters.some(a=>inside(p,a)))return"water";if(buildings.some(b=>inside(p,b.shape)))return"building";if(forests.some(a=>inside(p,a)))return"forest";if(nearRoad(p))return"road";return"open"}

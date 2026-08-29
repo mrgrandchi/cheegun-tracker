@@ -120,6 +120,10 @@ function zState(z,s){z.state=s;const d=dist(player,z.pos),vis=d<240&&["CHASE","I
 function canSee(a,b){return !lineBlocked(L.latLng(a),L.latLng(b),36)}
 function moveZombie(z,target,speed){const dx=target[0]-z.pos[0],dy=target[1]-z.pos[1],len=Math.hypot(dx,dy)||1,wiggle=Math.sin(Date.now()/520+z.id)*.16,nx=dx/len,ny=dy/len,rx=nx*Math.cos(wiggle)-ny*Math.sin(wiggle),ry=nx*Math.sin(wiggle)+ny*Math.cos(wiggle),n=L.latLng(z.pos[0]+rx*speed,z.pos[1]+ry*speed);if(!blocked(n))z.pos=[n.lat,n.lng]}
 function wanderTarget(z){for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2,d=.00045+Math.random()*.00055,p=[z.pos[0]+Math.cos(a)*d,z.pos[1]+Math.sin(a)*d];if(!blocked(L.latLng(p))){z.target=p;z.wanderUntil=Date.now()+1800+Math.random()*2800;return}}}
+function generatedPoiThreat(){
+ const sys=window.CheegunGeneratedLootThreat;if(!sys?.state?.enabled)return null;
+ return sys.threatAt(L.latLng(player));
+}
 function zombieAI(){if(gameOver)return;const now=Date.now();zombies.forEach(z=>{const d=dist(z.pos,player),see=d<125&&canSee(z.pos,player),hear=noise.pos&&now<noise.until&&dist(z.pos,noise.pos)<Math.max(45,noise.level*3.2);if(see){z.target=[...player];z.lastSeen=now+3500;zState(z,"CHASE");moveZombie(z,player,.000045)}else if(hear){z.target=[...noise.pos];z.lastSeen=0;zState(z,"INVESTIGATE");moveZombie(z,noise.pos,.000028)}else if(now<z.lastSeen){zState(z,"SEARCH");if(z.target)moveZombie(z,z.target,.00002)}else{zState(z,"WANDER");if(!z.target||now>z.wanderUntil||dist(z.target,z.pos)<10)wanderTarget(z);if(z.target)moveZombie(z,z.target,.000012)}z.marker.setLatLng(z.pos);if(dist(z.pos,player)<18){gameOver=true;health=0;hud();log("SURVIVOR OVERRUN • SESSION FAILED");$( "objective").textContent="☠ YOU WERE OVERRUN"}})}
 function updateWeather(){const now=Date.now();if(now<weatherUntil)return;const old=weather,roll=Math.random();weather=roll<.58?"CLEAR":roll<.8?"FOG":roll<.93?"RAIN":"STORM";weatherUntil=now+180000;if(weather!==old){const effects={CLEAR:"CLEAR SKIES • STANDARD VISIBILITY",FOG:"FOG ROLLING IN • REDUCED VISIBILITY",RAIN:"RAIN • NOISE DAMPENED",STORM:"STORM • DANGEROUS CONDITIONS"};currentVision.setRadius(Math.min(weather==="FOG"?135:weather==="STORM"?150:visionRadius,effectiveVisionRadius()));log("WEATHER CHANGE • "+effects[weather])}}
 function simplify(points){if(points.length<3)return points;const out=[points[0]];let a=0;for(let i=2;i<points.length;i++)if(lineBlocked(points[a],points[i])){out.push(points[i-1]);a=i-1}out.push(points.at(-1));return out}
@@ -206,12 +210,25 @@ function spawnHorde(){
  }
  log("⚠ HORDE EVENT • MULTIPLE INFECTED APPROACHING");$("threat").textContent="THREAT: EXTREME";emitNoise(55,"HORDE DISTURBANCE");
 }
+function phase16b8ThreatTick(){
+ const sys=window.CheegunGeneratedLootThreat;if(!sys?.state?.enabled)return;
+ const candidates=sys.spawnCandidates(L.latLng(player));
+ if(!candidates.length||zombies.length>=32)return;
+ const candidate=candidates[0],threat=generatedPoiThreat();
+ if(!threat||threat.level<3)return;
+ const p=candidate.position;if(blocked(L.latLng(p)))return;
+ const id="gpoi-"+candidate.id;
+ const z={id,pos:[p[0],p[1]],state:"WANDER",target:null,lastSeen:0,wanderUntil:0};
+ z.awareness=L.circle(z.pos,{radius:60+threat.level*12,color:"#ff3148",weight:1,opacity:.14,fillColor:"#ff3148",fillOpacity:.02,interactive:false}).addTo(map);
+ z.marker=L.marker(z.pos,{icon:icon("zombie","●",18),zIndexOffset:450}).addTo(map);z.marker.bindTooltip("INFECTED • REAL-WORLD THREAT",{direction:"top"});
+ zombies.push(z);sys.consumeSpawnCandidate(candidate.id);log("THREAT CONTACT • "+threat.poi.name.toUpperCase());}
 function phase3Tick(){
  if(gameOver)return;
  const hour=Math.floor(minutes/60)%24,isNight=hour>=20||hour<6;
  if(isNight&&!nightHorde){nightHorde=true;log("NIGHT FALLS • INFECTED ACTIVITY INCREASES");}
  if(!isNight&&nightHorde){nightHorde=false;$("threat").textContent="THREAT: MODERATE";log("DAYBREAK • VISIBILITY IMPROVING");}
  if(isNight&&Date.now()-lastHorde>90000){spawnHorde();lastHorde=Date.now()}
+ phase16b8ThreatTick();
  if(Date.now()-lastEvent>120000&&Math.random()<.38){lastEvent=Date.now();const events=["DISTANT SCREAMS","CAR ALARM","GUNSHOT ECHO","RADIO STATIC"];const e=events[Math.floor(Math.random()*events.length)];log("WORLD EVENT • "+e);if(Math.random()<.55)emitNoise(30,e)}
  if(infection>0)infection=clamp(infection+(health<35?.08:.025),0,100);
  if(infection>55)health=clamp(health-.06,0,100);

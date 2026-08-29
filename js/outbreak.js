@@ -132,6 +132,14 @@ function phase171Damage(amount,source="THREAT"){
  health=clamp(health-reduced,0,100);log(source+" • "+reduced+" DAMAGE");hud();return reduced;
 }
 window.CheegunApplyDamage=phase171Damage;
+function phase173TakeLoot(items){
+ const accepted=[],rejected=[];
+ for(const raw of items){const name=typeof raw==="string"?raw:raw.name;const r=window.CheegunInventoryAuthority?.add?.(name);if(r?.ok)accepted.push(name);else rejected.push(name)}
+ saveInv(window.CheegunInventoryAuthority?.inv?.()||[]);
+ if(rejected.length)log("PACK FULL • "+rejected.length+" ITEM(S) LEFT BEHIND");
+ return{accepted,rejected};
+}
+window.CheegunTakeLoot=phase173TakeLoot;
 function hud(){[["health",health],["hunger",hunger],["thirst",thirst],["stamina",stamina]].forEach(([k,v])=>{$(k).textContent=Math.round(v)+"%";$(k+"Bar").style.width=clamp(v,0,100)+"%"});$( "gameTime").textContent=String(Math.floor(minutes/60)%24).padStart(2,"0")+":"+String(Math.floor(minutes%60)).padStart(2,"0");survivor.getElement()?.classList.toggle("survivor-selected",selected)}
 function log(m){const e=document.createElement("div");e.className="log";e.innerHTML="<b>["+$( "gameTime").textContent+"]</b> "+m;$( "gameFeed").prepend(e);while($( "gameFeed").children.length>7)$( "gameFeed").lastElementChild.remove()}
 let noise={level:0,pos:null,until:0,ring:null};

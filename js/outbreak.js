@@ -116,11 +116,11 @@ function searchPOI(){const p=activePOI;if(!p||searching||gameOver)return;searchi
 function activateObjective(o){currentObjective=o;o.active=true;const target=buildingById.get(o.target);if(!target)return;objectiveMarker=L.marker(target.pos,{icon:icon("destination","!",22),zIndexOffset:800}).bindTooltip(o.name,{permanent:false}).addTo(map);$( "objective").textContent=o.text;log("NEW OBJECTIVE • "+o.name)}
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
-function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}
+function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}\nfunction phase1714OutbreakPressure(){const danger=Math.round(Math.random()*5)+2;window.CheegunDefense?.raise?.(danger,"EXPEDITION_ACTIVITY");const d=window.CheegunDefense?.status?.();if(d?.warning)log("⚠ SAFEHOUSE THREAT RISING • READINESS "+Math.round(d.readiness))}
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure()}
  return result;
 }
 function phase171UseSupply(id){

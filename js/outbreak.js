@@ -13,7 +13,9 @@ const style=document.createElement("style");
 style.textContent=`.survivor{width:34px;height:34px;border-radius:50%;background:#59ff87;border:3px solid #e2ffea;box-shadow:0 0 0 10px #59ff8722,0 0 26px #59ff87;display:grid;place-items:center;color:#06240e;font-weight:900}.survivor-selected{filter:drop-shadow(0 0 12px #59ff87)}.zombie{width:18px;height:18px;border-radius:50%;background:#ff4f61;border:2px solid #ffd2d6;box-shadow:0 0 13px #ff4f61;display:grid;place-items:center}.zombie.alert{background:#ff3148;box-shadow:0 0 18px #ff3148}.poi{width:30px;height:30px;border-radius:8px;background:#111e;border:1px solid #66716c;display:grid;place-items:center;font-size:15px;box-shadow:0 3px 15px #0009}.destination{width:16px;height:16px;border-radius:50%;border:2px solid #fff;background:#59ff87;box-shadow:0 0 18px #59ff87}.route-preview{stroke-dasharray:8 10;filter:drop-shadow(0 0 4px #59ff87)}.noise-pulse{animation:noisePulse 1.1s ease-out infinite}.vision-radius{stroke-dasharray:4 10;animation:visionScan 2.8s linear infinite}.safe-zone{animation:safePulse 2.4s ease-in-out infinite}@keyframes noisePulse{0%{stroke-opacity:.8;fill-opacity:.14}100%{stroke-opacity:0;fill-opacity:0}}@keyframes visionScan{to{stroke-dashoffset:-42}}@keyframes safePulse{50%{fill-opacity:.12;stroke-opacity:.9}}.leaflet-control-zoom a{background:#0b0e10!important;color:#d8dedb!important;border-color:#303936!important}.leaflet-control-attribution{font-size:8px!important}`;
 document.head.appendChild(style);
 
-let player=[48.414,-89.245],moving=false,selected=false,health=100,hunger=82,thirst=76,stamina=94,minutes=480,activePOI=null,searching=false,gameOver=false,moveToken=0,weather="CLEAR",weatherUntil=0,lastAutosave=0;
+const expeditionMods=window.CheegunExpeditionEffects?.expeditionStart?.({stamina:90,inventoryCapacity:8})||{inventoryBonus:0,stashBonus:0,staminaBonus:0,noiseMultiplier:1,damageReduction:0,lootBonus:0,stamina:94,inventoryCapacity:8};
+let player=[48.414,-89.245],moving=false,selected=false,health=100,hunger=82,thirst=76,stamina=expeditionMods.stamina,minutes=480,activePOI=null,searching=false,gameOver=false,moveToken=0,weather="CLEAR",weatherUntil=0,lastAutosave=0;
+window.cheegunExpeditionMods=expeditionMods;
 const visionRadius=185,currentVision=L.circle(player,{radius:visionRadius,color:"#59ff87",weight:1,opacity:.2,fillColor:"#59ff87",fillOpacity:.02,interactive:false,className:"vision-radius"}).addTo(map);
 let explored=[],fogLayer=null,destMarker=null,routeLine=null,objectiveMarker=null;
 const survivor=L.marker(player,{icon:icon("survivor","▲",34),zIndexOffset:1000}).addTo(map);
@@ -102,7 +104,7 @@ function discover(){buildings.forEach(b=>{const d=dist(player,b.pos);if(d<effect
 const lootTables={residential:["🥫 Canned Food","💧 Water Bottle","🔪 Kitchen Knife","🩹 Bandage","🎒 Backpack"],commercial:["🥫 Canned Food","💧 Water Bottle","🎒 Backpack","🔋 Battery","🔦 Flashlight","🔧 Crowbar"],vehicle:["💧 Water Bottle","🔋 Battery","🩹 Bandage","🔦 Flashlight","🔧 Tool Kit"],medical:["🩹 Bandage","💊 Painkillers","💉 Medical Kit","🩸 Trauma Kit"],emergency:["🪓 Rescue Axe","🩹 Trauma Bandage","📻 Radio Battery","🔦 Heavy Flashlight"],industrial:["🔧 Crowbar","⚙️ Tool Kit","🧰 Repair Kit","🔋 Power Cell"]};
 const weights={COMMON:.68,UNCOMMON:.23,RARE:.085,LEGENDARY:.005};
 function rarity(){let r=Math.random(),c=0;for(const[k,w]of Object.entries(weights)){c+=w;if(r<=c)return k}return"COMMON"}
-function loot(p){const n=Math.min(5,1+Math.floor(Math.random()*p.loot));return Array.from({length:n},()=>{const r=rarity(),base=lootTables[p.type]||lootTables.residential;let name=base[Math.floor(Math.random()*base.length)];if(r==="RARE")name=p.type==="medical"?"🩸 Trauma Kit":p.type==="emergency"?"📡 Emergency Beacon":"🛠️ Advanced Tool Kit";if(r==="LEGENDARY")name="🗝️ Master Keycard";return{name,rarity:r}})}
+function loot(p){const n=Math.min(6,1+Math.floor(Math.random()*p.loot)+(expeditionMods.lootBonus||0));return Array.from({length:n},()=>{const r=rarity(),base=lootTables[p.type]||lootTables.residential;let name=base[Math.floor(Math.random()*base.length)];if(r==="RARE")name=p.type==="medical"?"🩸 Trauma Kit":p.type==="emergency"?"📡 Emergency Beacon":"🛠️ Advanced Tool Kit";if(r==="LEGENDARY")name="🗝️ Master Keycard";return{name,rarity:r}})}
 function openPOI(p){if(gameOver||searching)return;if(!found.has(p.id)||dist(player,p.pos)>85)return log("MOVE CLOSER TO INTERACT");if(searched.has(p.id))return log("LOCATION ALREADY SEARCHED");activePOI=p;$( "lootTitle").textContent=p.name;$( "lootMeta").textContent=p.type.toUpperCase()+" • LOOT "+p.loot+"/5 • RISK "+p.danger+"/5 • "+p.time+" MIN";$( "lootModal").classList.remove("hidden")}
 function checkObjective(p){if(!currentObjective||currentObjective.target!==p.id)return;currentObjective.complete=true;log("OBJECTIVE COMPLETE • "+currentObjective.name);$( "objective").textContent="OBJECTIVE COMPLETE • "+currentObjective.reward;if(objectiveMarker){map.removeLayer(objectiveMarker);objectiveMarker=null}const next=objectives.find(o=>!o.complete&&!o.active);if(next)setTimeout(()=>activateObjective(next),1200)}
 function searchPOI(){const p=activePOI;if(!p||searching||gameOver)return;searching=true;setBuilding(p,"SEARCHING");$( "lootModal").classList.add("hidden");$( "objective").textContent="SEARCHING • "+p.name;emitNoise(Math.min(70,20+p.danger*8),"SEARCHING "+p.name);setTimeout(()=>{minutes+=p.time;searched.add(p.id);setBuilding(p,"LOOTED");const items=loot(p);$( "lootResults").dataset.loot=JSON.stringify(items);$( "lootResults").innerHTML=items.map(x=>`<div class="loot-found">${x.name}<small>${x.rarity}</small></div>`).join("");$( "lootResultsModal").classList.remove("hidden");searching=false;hud();checkObjective(p);log("SEARCH COMPLETE • "+items.length+" ITEMS FOUND")},p.time*120)}
@@ -115,6 +117,21 @@ function phase16b10StartExpedition(){
  if(result?.ok)log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());
  return result;
 }
+function phase171UseSupply(id){
+ const r=window.CheegunExpeditionEffects?.consume?.(id);if(!r?.ok)return r;
+ const e=r.effect;
+ if(e.use==="heal")health=clamp(health+e.amount,0,100);
+ if(e.use==="hunger")hunger=clamp(hunger+e.amount,0,100);
+ if(e.use==="thirst")thirst=clamp(thirst+e.amount,0,100);
+ window.cheegunExpeditionMods=window.CheegunExpeditionEffects.modifiers();
+ log(e.label);hud();return{ok:true,effect:e};
+}
+window.CheegunUseSupply=phase171UseSupply;
+function phase171Damage(amount,source="THREAT"){
+ const reduced=Math.max(0,Math.round(amount*(1-(expeditionMods.damageReduction||0))));
+ health=clamp(health-reduced,0,100);log(source+" • "+reduced+" DAMAGE");hud();return reduced;
+}
+window.CheegunApplyDamage=phase171Damage;
 function hud(){[["health",health],["hunger",hunger],["thirst",thirst],["stamina",stamina]].forEach(([k,v])=>{$(k).textContent=Math.round(v)+"%";$(k+"Bar").style.width=clamp(v,0,100)+"%"});$( "gameTime").textContent=String(Math.floor(minutes/60)%24).padStart(2,"0")+":"+String(Math.floor(minutes%60)).padStart(2,"0");survivor.getElement()?.classList.toggle("survivor-selected",selected)}
 function log(m){const e=document.createElement("div");e.className="log";e.innerHTML="<b>["+$( "gameTime").textContent+"]</b> "+m;$( "gameFeed").prepend(e);while($( "gameFeed").children.length>7)$( "gameFeed").lastElementChild.remove()}
 let noise={level:0,pos:null,until:0,ring:null};

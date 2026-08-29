@@ -36,7 +36,7 @@ const forests=[[[48.4195,-89.258],[48.422,-89.252],[48.419,-89.247],[48.4168,-89
 const waters=[[[48.401,-89.233],[48.43,-89.233],[48.43,-89.226],[48.401,-89.226]],[[48.406,-89.262],[48.41,-89.262],[48.41,-89.257],[48.406,-89.257]]];
 const roads=[[[48.422,-89.261],[48.419,-89.255],[48.416,-89.251],[48.414,-89.247],[48.411,-89.243],[48.408,-89.238]],[[48.42,-89.251],[48.417,-89.248],[48.414,-89.245],[48.412,-89.24],[48.409,-89.236]],[[48.418,-89.257],[48.416,-89.251],[48.414,-89.245],[48.412,-89.239]],[[48.407,-89.252],[48.410,-89.249],[48.414,-89.247],[48.418,-89.245],[48.421,-89.241]],[[48.412,-89.258],[48.414,-89.253],[48.417,-89.248],[48.419,-89.243]]];
 const roadSegments=roads.flatMap(path=>path.slice(1).map((p,i)=>[path[i],p]));
-const found=new Set(),searched=new Set(),layers=new Map(),buildingById=new Map(buildings.map(b=>[b.id,b]));
+const fastTravelTarget=(()=>{try{return JSON.parse(localStorage.getItem("cheegunFastTravelTarget")||"null")}catch{return null}})();\nif(fastTravelTarget?.pos){player=[...fastTravelTarget.pos];localStorage.removeItem("cheegunFastTravelTarget");}\nconst found=new Set(),searched=new Set(),layers=new Map(),buildingById=new Map(buildings.map(b=>[b.id,b]));
 const glyph={commercial:"🏪",vehicle:"🚗",residential:"🏠",medical:"✚",emergency:"🚒",industrial:"⚙️"};
 roads.forEach(p=>L.polyline(p,{pane:"overlayPane",color:"#9fb9c7",weight:2.5,opacity:.23,dashArray:"2 8",interactive:false}).addTo(map));
 forests.forEach(p=>L.polygon(p,{color:"#4d8d63",weight:1,fillColor:"#245238",fillOpacity:.11,interactive:false}).addTo(map));
@@ -123,7 +123,7 @@ function phase1715EvolveOutbreak(){const r=window.CheegunOutbreakEvolution?.adva
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8)}
  return result;
 }
 function phase171UseSupply(id){

@@ -117,6 +117,7 @@ function activateObjective(o){currentObjective=o;o.active=true;const target=buil
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
 function phase1710StartContract(){const c=phase1710ContractObjective();if(c)log("ACTIVE CONTRACT • "+c.name+" • RISK "+c.difficulty+"/5");}\nfunction phase1714OutbreakPressure(){const danger=Math.round(Math.random()*5)+2;window.CheegunDefense?.raise?.(danger,"EXPEDITION_ACTIVITY");const d=window.CheegunDefense?.status?.();if(d?.warning)log("⚠ SAFEHOUSE THREAT RISING • READINESS "+Math.round(d.readiness))}
+function phase1724CasualtyTick(){const before=window.CheegunCasualtySystem?.summary?.().deaths||0;const r=window.CheegunCasualtySystem?.tick?.();if(r&&r.deaths>before)log("🕯 SURVIVOR LOST • RETURN TO SAFEHOUSE MEMORIAL");return r}
 function phase1723StoryTick(){const before=window.CheegunStoryEvents?.summary?.().active?.uid;const r=window.CheegunStoryEvents?.tick?.();if(!before&&r?.active)log(r.active.icon+" LEADERSHIP EVENT • "+r.active.name+" • RETURN TO SAFEHOUSE");return r}
 function phase1721CommunityTick(){return window.CheegunSurvivorCommunity?.tick?.();phase1723StoryTick()}
 function phase1720MissionTick(){const before=window.CheegunSurvivorMissions?.summary?.().active?.length||0;const r=window.CheegunSurvivorMissions?.tick?.();if(r&&r.active.length<before)log("SURVIVOR TEAM RETURNED • CHECK SAFEHOUSE OPERATIONS");return r}
@@ -128,7 +129,7 @@ function phase1715EvolveOutbreak(){const r=window.CheegunOutbreakEvolution?.adva
 function phase16b10StartExpedition(){
  const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
  const result=mode.start(L.latLng(player));
- if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick();phase1720MissionTick();window.CheegunSurvivorCommunity?.tick?.()}
+ if(result?.ok){log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());phase1710StartContract();phase1714OutbreakPressure();phase1715EvolveOutbreak();window.CheegunDistrictControl?.decay?.();window.CheegunSupplyNetwork?.damageRoutes?.(8);phase1719EmergencyTick();phase1720MissionTick();window.CheegunSurvivorCommunity?.tick?.();phase1723StoryTick();phase1724CasualtyTick()}
  return result;
 }
 function phase171UseSupply(id){

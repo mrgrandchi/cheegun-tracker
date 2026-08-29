@@ -68,6 +68,8 @@ function run(){
 }
 function summary(){return state.lastReport?{pass:state.lastReport.pass,errors:state.lastReport.errors,warnings:state.lastReport.warnings}:null}
 window.CheegunLiveAcceptance={state,run,summary};
-function scheduleAcceptance(){const started=Date.now();const poll=()=>{if(window.cheegunGeneratedWorld&&window.cheegunGeneratedGameplay)return run();if(Date.now()-started<15000)return setTimeout(poll,300);return run()};poll()}\nwindow.addEventListener("load",()=>setTimeout(scheduleAcceptance,1000));\ndocument.addEventListener("cheegunWorldLive",()=>setTimeout(scheduleAcceptance,250),{once:true});
+function scheduleAcceptance(){const started=Date.now();const poll=()=>{if(window.cheegunGeneratedWorld&&window.cheegunGeneratedGameplay)return run();if(Date.now()-started<15000)return setTimeout(poll,300);return run()};poll()}
+window.addEventListener("load",()=>setTimeout(scheduleAcceptance,1000));
+document.addEventListener("cheegunWorldLive",()=>setTimeout(scheduleAcceptance,250),{once:true});
 console.info("[CHEEGUN 16B.13] Live expedition acceptance harness armed.");
 })();

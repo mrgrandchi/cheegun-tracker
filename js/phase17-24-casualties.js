@@ -1,0 +1,17 @@
+(()=>{
+"use strict";
+/* PHASE 17.24 — SURVIVOR DEATH, RESCUE & PERMANENT CONSEQUENCES */
+const KEY="cheegunCasualtySystem_v1";
+function base(){return{missing:[],rescues:0,deaths:0,casualties:[],memorials:[],shockwaves:0}}
+function load(){try{return{...base(),...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch{return base()}}
+function save(s){localStorage.setItem(KEY,JSON.stringify(s));return s}
+function roster(){return window.CheegunSettlement?.summary?.().population||[]}
+function person(id){return roster().find(x=>x.id===id)}
+function markMissing(id,{cause="MISSION FAILURE",location="UNKNOWN",missionId=null}={}){const p=person(id);if(!p)return{ok:false,reason:"SURVIVOR_NOT_FOUND"};const s=load();if(s.missing.some(x=>x.id===id))return{ok:false,reason:"ALREADY_MISSING"};const rec={id,name:p.name,role:p.role,cause,location,missionId,missingAt:Date.now(),rescueWindowEnds:Date.now()+300000,risk:Math.min(95,45+(window.CheegunSurvivorCommunity?.summary?.().fatigue?.[id]||0)/2)};s.missing.push(rec);s.casualties.push({type:"MISSING",...rec});save(s);window.CheegunSurvivorCommunity?.applyMorale?.(-7,"SURVIVOR_MISSING");return{ok:true,record:rec}}
+function rescue(id,{success=null}={}){const s=load(),r=s.missing.find(x=>x.id===id);if(!r)return{ok:false,reason:"NO_MISSING_SURVIVOR"};const now=Date.now();const chance=Math.max(15,100-r.risk-(now>r.rescueWindowEnds?25:0));const won=success===null?Math.random()*100<chance:!!success;if(won){s.missing=s.missing.filter(x=>x.id!==id);s.rescues++;s.casualties.push({type:"RESCUED",...r,rescuedAt:now});save(s);window.CheegunSurvivorCommunity?.applyMorale?.(10,"SURVIVOR_RESCUED");return{ok:true,success:true,record:r,chance}}return confirmDeath(id,{cause:r.cause+" • RESCUE FAILED",location:r.location,fromMissing:true})}
+function confirmDeath(id,{cause="UNKNOWN",location="UNKNOWN",fromMissing=false}={}){const s=load(),p=person(id);if(!p)return{ok:false,reason:"SURVIVOR_NOT_FOUND"};const legacy=window.CheegunSurvivorLegacy?.recordDeath?.(id,{cause,location});s.missing=s.missing.filter(x=>x.id!==id);s.deaths++;s.shockwaves++;const entry={id,name:p.name,role:p.role,cause,location,at:Date.now(),fromMissing,legacy:legacy?.entry||null};s.casualties.push({type:"DEAD",...entry});s.memorials.push(entry);save(s);return{ok:true,entry}}
+function missionFailure(m){const team=m.team||[];if(!team.length)return null;const community=window.CheegunSurvivorCommunity?.summary?.(),injured=team.filter(id=>community?.injuries?.[id]);const candidates=injured.length?injured:team;const id=candidates[Math.floor(Math.random()*candidates.length)];const p=person(id);if(!p)return null;const severe=Math.random()<.42;return severe?confirmDeath(id,{cause:m.name+" CASUALTY",location:m.districtId||"FIELD OPERATION"}):markMissing(id,{cause:m.name+" • LOST CONTACT",location:m.districtId||"FIELD OPERATION",missionId:m.id})}
+function tick(){const s=load();for(const r of [...s.missing])if(Date.now()>r.rescueWindowEnds)confirmDeath(r.id,{cause:r.cause+" • RESCUE WINDOW EXPIRED",location:r.location,fromMissing:true});return summary()}
+function summary(){const s=load();return{...s,missing:s.missing.map(r=>({...r,minutesLeft:Math.max(0,Math.ceil((r.rescueWindowEnds-Date.now())/60000))}))}}
+window.CheegunCasualtySystem={KEY,load,save,markMissing,rescue,confirmDeath,missionFailure,tick,summary};
+})();

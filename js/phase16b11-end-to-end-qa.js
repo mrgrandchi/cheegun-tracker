@@ -79,6 +79,6 @@ function summary(){
  return {pass:r.pass,errors:r.errors,warnings:r.warnings,metrics:r.metrics,issues:r.issues};
 }
 window.CheegunRealWorldQA={CFG,state,run,summary};
-window.addEventListener("load",()=>setTimeout(run,2600));
+let scheduled=false;\nfunction schedule(){if(scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;run()},150)}\nwindow.addEventListener("load",()=>setTimeout(run,8000));\ndocument.addEventListener("cheegunWorldLive",schedule);\ndocument.addEventListener("cheegunGeneratedGameplayReady",schedule);
 console.info("[CHEEGUN 16B.11] End-to-end QA harness ready.");
 })();

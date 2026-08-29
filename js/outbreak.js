@@ -109,6 +109,12 @@ function searchPOI(){const p=activePOI;if(!p||searching||gameOver)return;searchi
 function activateObjective(o){currentObjective=o;o.active=true;const target=buildingById.get(o.target);if(!target)return;objectiveMarker=L.marker(target.pos,{icon:icon("destination","!",22),zIndexOffset:800}).bindTooltip(o.name,{permanent:false}).addTo(map);$( "objective").textContent=o.text;log("NEW OBJECTIVE • "+o.name)}
 function inv(){try{return JSON.parse(localStorage.getItem("outbreak_inventory")||"[]")}catch{return[]}}
 function saveInv(a){a=a.slice(0,8);localStorage.setItem("outbreak_inventory",JSON.stringify(a));$( "inventory").innerHTML=a.length?a.slice(-5).map(x=>"<span class=\"item\">"+x+"</span>").join(""):"<span>EMPTY</span>";$( "inventoryCount").textContent=a.length+" / 8"}
+function phase16b10StartExpedition(){
+ const mode=window.CheegunRealWorldMode;if(!mode||mode.state.started)return null;
+ const result=mode.start(L.latLng(player));
+ if(result?.ok)log("REAL WORLD EXPEDITION • "+result.runId.toUpperCase());
+ return result;
+}
 function hud(){[["health",health],["hunger",hunger],["thirst",thirst],["stamina",stamina]].forEach(([k,v])=>{$(k).textContent=Math.round(v)+"%";$(k+"Bar").style.width=clamp(v,0,100)+"%"});$( "gameTime").textContent=String(Math.floor(minutes/60)%24).padStart(2,"0")+":"+String(Math.floor(minutes%60)).padStart(2,"0");survivor.getElement()?.classList.toggle("survivor-selected",selected)}
 function log(m){const e=document.createElement("div");e.className="log";e.innerHTML="<b>["+$( "gameTime").textContent+"]</b> "+m;$( "gameFeed").prepend(e);while($( "gameFeed").children.length>7)$( "gameFeed").lastElementChild.remove()}
 let noise={level:0,pos:null,until:0,ring:null};
@@ -239,5 +245,6 @@ document.addEventListener("keydown",e=>{if(e.code==="Space"){e.preventDefault();
 $("attackBtn")?.addEventListener("click",attack);$("consumeBtn")?.addEventListener("click",consume);$("craftBtn")?.addEventListener("click",craft);$("craftClose")?.addEventListener("click",()=>$("craftModal").classList.add("hidden"));
 const _phase3Save=saveGame; saveGame=function(){_phase3Save();try{const s=JSON.parse(localStorage.getItem("outbreak_save")||"{}");s.infection=infection;s.weapon=weapon;localStorage.setItem("outbreak_save",JSON.stringify(s))}catch{}};
 const _phase3Load=loadGame; loadGame=function(){const ok=_phase3Load();try{const s=JSON.parse(localStorage.getItem("outbreak_save")||"{}");infection=s.infection||0;weapon=s.weapon||null}catch{};return ok};
+phase16b10StartExpedition();
 setInterval(()=>{phase3Tick();equipBest()},1000);
 saveInv(inv());explored=[[...player]];const loaded=loadGame();reveal();discover();hud();if(!currentObjective)activateObjective(objectives[0]);log(loaded?"SESSION RESTORED • TACTICAL WORLD PERSISTENT":"TACTICAL WORLD LAYER 2 ONLINE");log("10 LOCATIONS • 3 OBJECTIVES • 3 SAFEHOUSES");log("12 INFECTED ACTIVE • WEATHER SYSTEM ONLINE");log("CLICK SURVIVOR TO BEGIN");requestAnimationFrame(loop);setTimeout(()=>map.invalidateSize(),250)})();
